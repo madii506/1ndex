@@ -57,7 +57,6 @@
   <div class="cd-stick" id="cdStick">
     <div class="wrap cd-top"><div><p class="eyebrow"><b>01</b> the crash, replayed</p><h2 class="h2">the worst four hours.</h2></div><span class="cd-when" id="cdWhen">reading the market…</span></div>
     <div class="wrap cd-mid" id="cdMid"><canvas id="cdCanvas"></canvas><div class="cd-big" id="cdBig"><span id="cdBigK">the S&amp;P 500</span><b id="cdBigV">0.00%</b></div><div id="cdLabs"></div></div>
-    <div class="wrap"><p class="cd-say" id="cdSay">scroll, and watch what each part did.</p></div>
     <div class="cd-steps" id="cdSteps" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
   </div>
 </section>
@@ -66,16 +65,16 @@
   <div class="wrap">
     <p class="eyebrow rv"><b>02</b> why it exists</p>
     <div class="why-rows">
-      <div class="why-row rv"><span class="n">01</span><div class="txt"><h3>your whole bag<br>is one bet.</h3><p>Memecoins, SOL and tokenized stocks all ride on risk. On a red day for stocks, the whole wallet goes red together.</p></div><div class="wv"><div class="wbars" id="whyBars"><small>reading the market…</small></div></div></div>
-      <div class="why-row rv"><span class="n">02</span><div class="txt"><h3>a real hedge<br>is a chore.</h3><p>Brokers, options, expiry dates. So nobody on-chain bothers, and every crash catches the timeline long.</p></div><div class="wv"><div class="chain" aria-hidden="true"><span>broker</span><span>account</span><span>options</span><span>strike</span><span>expiry</span><span>premium</span><span>margin</span><span>roll</span><span>delta</span><span>theta</span><span>KYC</span><span>assignment</span></div></div></div>
-      <div class="why-row rv"><span class="n">03</span><div class="txt"><h3>1ndex is<br><span class="g">one ticker.</span></h3><p>One coin on Raydium. Its treasury holds gold, the short Nasdaq, VIX and dollars, and every trade buys more.</p></div><div class="wv"><canvas id="wv3" aria-hidden="true"></canvas></div></div>
+      <div class="why-row rv"><span class="n">01</span><div class="txt"><h3>your whole bag<br>is one bet.</h3></div><div class="wv"><div class="wbars" id="whyBars"><small>reading the market…</small></div></div></div>
+      <div class="why-row rv"><span class="n">02</span><div class="txt"><h3>a real hedge<br>is a chore.</h3></div><div class="wv"><div class="chain" aria-hidden="true"><span>broker</span><span>account</span><span>options</span><span>strike</span><span>expiry</span><span>premium</span><span>margin</span><span>roll</span><span>delta</span><span>theta</span><span>KYC</span><span>assignment</span></div></div></div>
+      <div class="why-row rv"><span class="n">03</span><div class="txt"><h3>1ndex is<br><span class="g">one ticker.</span></h3></div><div class="wv"><canvas id="wv3" aria-hidden="true"></canvas></div></div>
     </div>
   </div>
 </section>
 
 <section class="band" id="four">
   <div class="wrap">
-    <div class="head2"><div><p class="eyebrow rv"><b>03</b> the four</p><h2 class="h2 rv">a quarter each.<br><span class="g">nothing else.</span></h2></div><p class="lead rv">Four tokens on Solana that tend to hold up or rise when stocks fall. Equal weight, topped back to a quarter each every Monday. No memecoins, no launchpad tokens, nothing that goes long stocks.</p></div>
+    <div class="head2"><div><p class="eyebrow rv"><b>03</b> the four</p><h2 class="h2 rv">a quarter each.<br><span class="g">nothing else.</span></h2></div></div>
     <div class="picker">
       <div class="ringcol rv"><div class="ringwrap"><canvas id="ringCv" role="img" aria-label="the 1ndex ring: four slices, a quarter each. Pick a slice."></canvas></div><div class="chips4" id="chips4" role="tablist" aria-label="the four"></div></div>
       <div class="detail" id="detail" aria-live="polite"><div class="empty">loading the four…</div></div>
@@ -84,15 +83,14 @@
       <p class="vs-say rv" id="vsSay">15 days of the S&amp;P 500 against the four.</p>
       <div class="vs-sub rv"><span class="lg spy">the S&amp;P 500</span><span class="lg ndx">the 1ndex four</span><span>index level <b id="lvl">—</b></span><span>next rebalance <b id="reb">—</b></span></div>
       <div class="chart rv"><canvas id="chart" aria-label="15-day chart of the S&amp;P 500 and the 1ndex four"></canvas><div class="tip" id="tip" hidden></div></div>
-      <p class="fine" id="vs100"></p>
-      <p class="fine">Percent change from 15 days ago, 4-hour closes from GeckoTerminal. The four start at a quarter each; dollars stay a dollar. Past moves say nothing about the next ones.</p>
+      <p class="fine">4-hour closes from GeckoTerminal. Past moves only.</p>
     </div>
   </div>
 </section>
 
 <section class="band" id="push">
   <div class="wrap">
-    <div class="head2"><div><p class="eyebrow rv"><b>04</b> crash test</p><h2 class="h2 rv">push the market.</h2></div><p class="lead rv">Pick a day for the S&amp;P 500 and watch what each quarter of $100 in the four might do. Simple rules of thumb, written out under the bars.</p></div>
+    <div class="head2"><div><p class="eyebrow rv"><b>04</b> crash test</p><h2 class="h2 rv">push the market.</h2></div></div>
     <div class="push">
       <div class="dial rv">
         <span>if the S&amp;P 500 moves</span>
@@ -107,13 +105,13 @@
       </div>
       <div class="eqbox rv" style="--d:1"><div class="eq"><canvas id="eqCv" aria-label="what each quarter of $100 becomes"></canvas></div><div class="eq-lab" id="eqLab"></div></div>
     </div>
-    <p class="fine">Rules of thumb, not a forecast: the Nasdaq-100 moves about 1.25× the S&amp;P; the short Nasdaq aims for −3× the Nasdaq each day; the VIX fund moves about −3.5× the S&amp;P on big days; gold is held flat; dollars stay a dollar.</p>
+    <p class="fine" title="the Nasdaq-100 moves about 1.25× the S&amp;P; the short Nasdaq aims for −3× the Nasdaq each day; the VIX fund moves about −3.5× the S&amp;P on big days; gold held flat; dollars stay a dollar">Rules of thumb, not a forecast.</p>
   </div>
 </section>
 
 <section class="band" id="coin">
   <div class="wrap">
-    <div class="head2"><div><p class="eyebrow rv"><b>05</b> the coin</p><h2 class="h2 rv">every trade<br><span class="g">buys the four.</span></h2></div><p class="lead rv">$1NDEX launches on its own Raydium LaunchLab launchpad. <b>1% of every trade</b> goes to the index treasury, which tops up whichever of the four is under a quarter.</p></div>
+    <div class="head2"><div><p class="eyebrow rv"><b>05</b> the coin</p><h2 class="h2 rv">every trade<br><span class="g">buys the four.</span></h2></div></div>
     <div class="sim rv" id="sim"><span>try a trade of</span><button data-v="0.5">0.5 SOL</button><button data-v="1" class="on">1 SOL</button><button data-v="5">5 SOL</button><button data-v="25">25 SOL</button></div>
     <div class="pipe rv" id="pipe"><canvas id="pipeCv" aria-label="how a trade turns into the four"></canvas><div id="pipeLabs"></div></div>
     <div class="cgrid">
@@ -135,7 +133,7 @@
 
 <section class="band" id="treasury">
   <div class="wrap">
-    <div class="head2"><div><p class="eyebrow rv"><b>06</b> the treasury</p><h2 class="h2 rv">four vaults,<br>filled on-chain.</h2></div><p class="lead rv">Read straight from the chain. Every claim and every buy is a public transaction from the treasury wallet, and each vault is filled toward a quarter.</p></div>
+    <div class="head2"><div><p class="eyebrow rv"><b>06</b> the treasury</p><h2 class="h2 rv">four vaults,<br>filled on-chain.</h2></div></div>
     <div class="vaults" id="vaults"></div>
     <div class="tsum rv"><span>held <b id="held">—</b></span><span>waiting to be claimed <b id="unclaimed">—</b></span><span>next rebalance <b id="reb2">—</b></span><span id="treWallet"></span></div>
     <div class="acts rv"><div id="activity"><div class="empty">every claim and buy shows up here, from the first one.</div></div></div>
@@ -144,16 +142,16 @@
 
 <section class="band" id="pools">
   <div class="wrap">
-    <div class="head2"><div><p class="eyebrow rv"><b>07</b> under the hood</p><h2 class="h2 rv">pools and<br>fine print.</h2></div><p class="lead rv">Where each of the four trades on Solana, live from Dexscreener. The treasury buys through Jupiter, which routes across these pools.</p></div>
+    <div class="head2"><div><p class="eyebrow rv"><b>07</b> under the hood</p><h2 class="h2 rv">under<br>the hood.</h2></div></div>
     <div class="pgrid">
-      <div class="rv"><h3>the deepest pool for each</h3><div id="poolList"><div class="empty">loading…</div></div></div>
-      <div class="rv" style="--d:1"><h3>read this before you buy</h3>
+      <div class="rv"><h3>pools</h3><div id="poolList"><div class="empty">loading…</div></div></div>
+      <div class="rv" style="--d:1"><h3>before you buy</h3>
         <ol class="risks">
-          <li><span><b>A hedge, not a promise.</b> Gold can fall with stocks, and the short Nasdaq and VIX lose value in calm or choppy weeks.</span></li>
-          <li><span><b>Thin pools.</b> The VIX fund's pool on Solana is small, so large buys move its price.</span></li>
-          <li><span><b>Issuers keep powers.</b> Tokenized funds are issued by third parties that can pause or move their tokens.</span></li>
-          <li><span><b>A coin, not a share.</b> $1NDEX doesn't redeem for the treasury. It can go to zero.</span></li>
-          <li><span><b>Independent.</b> 1ndex isn't affiliated with Raydium, ProShares, SPDR, Circle or any issuer, and none of this is financial advice.</span></li>
+          <li><span><b>A hedge, not a promise.</b> The short Nasdaq and VIX bleed in calm weeks.</span></li>
+          <li><span><b>Thin pools.</b> Big buys move the VIX price.</span></li>
+          <li><span><b>Issuers keep powers.</b> They can pause their tokens.</span></li>
+          <li><span><b>A coin, not a share.</b> No redemption. It can go to zero.</span></li>
+          <li><span><b>Independent.</b> Not affiliated with Raydium or any issuer. Not financial advice.</span></li>
         </ol></div>
     </div>
   </div>
@@ -163,7 +161,6 @@
   <canvas id="outroCv" aria-hidden="true"></canvas>
   <div class="wrap">
     <h2 class="h2 rv">be on the<br><span class="g">other side.</span></h2>
-    <p class="rv">When stocks have a bad day, most of crypto has one too. 1ndex is the coin built to lean the other way.</p>
     <div class="cta rv"><a class="btn btn-go" href="#coin">get $1NDEX</a><a class="btn" href="/docs">read the docs</a></div>
   </div>
 </section>

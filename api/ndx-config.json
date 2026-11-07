@@ -1,0 +1,15 @@
+{
+  "name": "1ndex",
+  "symbol": "1NDEX",
+  "pad": null,
+  "mint": null,
+  "treasury": null,
+  "rule": "four things that tend to hold up or rise when stocks fall, a quarter each, rebalanced every Monday",
+  "benchmark": { "symbol": "SPYx", "name": "the S&P 500 (SPYx)", "mint": "XsoCS1TfEyfFhfvj8EtZ528L3CaKBDBRqRapnBbDF2W" },
+  "members": [
+    { "symbol": "GOLD", "ticker": "GLDx", "name": "Gold xStock", "mint": "Xsv9hRk1z5ystj9MhnA7Lq4vjSsLwzL2nxrwmwtD3re", "decimals": 8, "kind": "gold", "note": "tracks the SPDR Gold Shares ETF. gold doesn't follow stocks." },
+    { "symbol": "SQQQ", "ticker": "SQQQ", "name": "ProShares UltraPro Short QQQ", "mint": "SQQQAa3gUxgnqcEsdjPA4RQNQBgB97TnG2hJhk2WaGE", "decimals": 6, "kind": "short", "note": "aims for 3x the opposite of the Nasdaq-100, each day. rises when tech falls." },
+    { "symbol": "VIX", "ticker": "UVXY", "name": "ProShares Ultra VIX Short-Term Futures", "mint": "UVXY4ojmAMTaPwUmrRmcuxWHjMHCbz3BxX2RBMzjYKx", "decimals": 6, "kind": "vol", "note": "follows the market's fear gauge. it spikes when stocks crash." },
+    { "symbol": "USD", "ticker": "USDC", "name": "USD Coin", "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", "decimals": 6, "kind": "cash", "note": "a dollar. it doesn't fall when stocks fall." }
+  ]
+}

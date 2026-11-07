@@ -164,7 +164,7 @@ async function sendTxs(req) {
   return { sigs };
 }
 
-module.exports = async (req, res) => {
+module.exports = async (req, res) => { if (req.method === 'GET') res.setHeader('access-control-allow-origin', '*');
   const q = new URL(req.url, 'http://x').searchParams, a = q.get('a');
   try {
     if (a === 'basket') return out(res, 200, await basket(), 's-maxage=45, stale-while-revalidate=120');

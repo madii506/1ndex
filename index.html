@@ -12,21 +12,23 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://1ndex-gamma.vercel.app/og.png">
 <meta name="theme-color" content="#070b1c">
-<link rel="icon" type="image/png" sizes="48x48" href="/favicon.png?v=1">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png?v=2">
+<link rel="icon" type="image/png" sizes="48x48" href="/favicon.png?v=2">
+<link rel="icon" type="image/png" sizes="96x96" href="/favicon-96.png?v=2">
 <link rel="apple-touch-icon" href="/icon.png?v=1">
 <link rel="preload" href="/assets/fonts/interd-700.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/assets/fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/assets/x.css?v=2">
+<link rel="stylesheet" href="/assets/x.css?v=3">
 </head>
 <body class="intro-on">
 
 <canvas id="intro" aria-hidden="true"></canvas>
-<a class="skip" href="#crashday">skip to content</a>
+<a class="skip" href="#stocks">skip to content</a>
 
 <nav class="nav" id="nav">
   <a class="nav-brand" href="#top" aria-label="1ndex, back to the top"><canvas class="ringmark" data-size="22"></canvas><b>1ndex</b></a>
   <div class="nav-links">
-    <a href="#crashday">the crash</a><a href="#why">why</a><a href="#four">the four</a><a href="#push">push it</a><a href="#coin">the coin</a><a href="#treasury">treasury</a><a href="/docs">docs</a>
+    <a href="#stocks">stocks</a><a href="#crashday">the crash</a><a href="#four">the four</a><a href="#push">push it</a><a href="#coin">the coin</a><a href="/docs">docs</a>
   </div>
   <button class="snd" id="snd" aria-label="sound on or off" title="sound"><span></span><span></span><span></span><span></span></button>
   <a class="btn btn-go btn-sm" href="#coin">$1NDEX</a>
@@ -40,22 +42,32 @@
     <p class="live" id="live"><i></i><span id="liveTxt">reading the market…</span></p>
     <h1 class="lockup"><canvas class="ringmark" id="heroMark"></canvas><span class="wm">1ndex</span></h1>
     <p class="tagline">the coin that hedges against the stock market</p>
-    <div class="cta"><a class="btn btn-go" href="#coin">get $1NDEX</a><a class="btn" href="#crashday">replay a crash ↓</a></div>
+    <div class="cta"><a class="btn btn-go" href="#coin">get $1NDEX</a></div>
   </div>
   <div class="stage" id="stage" tabindex="0" role="group" aria-label="A seesaw: the S&amp;P 500 on one end, the 1ndex four on the other, tilted by their live 24-hour moves. Arrow keys move the S&amp;P by rules of thumb; Escape goes back to live.">
     <canvas id="stageCv"></canvas>
-    <div class="end spy" id="endSpy"><span id="eSpyK">the S&amp;P 500 · today</span><b id="eSpy">—</b></div>
-    <div class="end ndx" id="endNdx"><span id="eNdxK">the 1ndex four · today</span><b id="eNdx">—</b></div>
-    <div class="grab" id="grab">drag the S&amp;P ↕</div>
+    <div class="end spy" id="endSpy"><span id="eSpyK">S&amp;P 500</span><b id="eSpy">—</b></div>
+    <div class="end ndx" id="endNdx"><span id="eNdxK">the four</span><b id="eNdx">—</b></div>
+    <div class="grab" id="grab">drag ↕</div>
   </div>
-  <div class="hero-foot"><div class="tape" aria-label="live prices"><div class="tape-in" id="tape"><span>loading live prices…</span></div></div></div>
 </section>
 
-<div class="marq" aria-hidden="true"><div class="mrow a" id="mA"></div><div class="mrow b" id="mB"></div></div>
+<section class="band" id="stocks">
+  <div class="wrap">
+    <div class="sh"><p class="eyebrow"><b>01</b> stocks, live</p><h2 class="h2 rv">the stock market, right now.</h2></div>
+    <div class="board">
+      <div class="bsum rv">
+        <b id="bsN">—</b><span id="bsT">reading the market…</span>
+        <div class="bvs"><div><small>stocks, average</small><b id="bsA">—</b></div><div><small>the four</small><b id="bsF">—</b></div></div>
+      </div>
+      <div class="tiles" id="tiles"></div>
+    </div>
+  </div>
+</section>
 
 <section id="crashday" aria-label="the worst four hours of the last 15 days, replayed">
   <div class="cd-stick" id="cdStick">
-    <div class="wrap cd-top"><div><p class="eyebrow"><b>01</b> the crash, replayed</p><h2 class="h2">the worst four hours.</h2></div><span class="cd-when" id="cdWhen">reading the market…</span></div>
+    <div class="wrap cd-top"><div><p class="eyebrow"><b>02</b> the crash, replayed</p><h2 class="h2">the worst four hours.</h2></div><span class="cd-when" id="cdWhen">reading the market…</span></div>
     <div class="wrap cd-mid" id="cdMid"><canvas id="cdCanvas"></canvas><div class="cd-big" id="cdBig"><span id="cdBigK">the S&amp;P 500</span><b id="cdBigV">0.00%</b></div><div id="cdLabs"></div></div>
     <div class="cd-steps" id="cdSteps" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
   </div>
@@ -63,18 +75,18 @@
 
 <section class="band" id="why">
   <div class="wrap">
-    <p class="eyebrow rv"><b>02</b> why it exists</p>
-    <div class="why-rows">
-      <div class="why-row rv"><span class="n">01</span><div class="txt"><h3>your whole bag<br>is one bet.</h3></div><div class="wv"><div class="wbars" id="whyBars"><small>reading the market…</small></div></div></div>
-      <div class="why-row rv"><span class="n">02</span><div class="txt"><h3>a real hedge<br>is a chore.</h3></div><div class="wv"><div class="chain" aria-hidden="true"><span>broker</span><span>account</span><span>options</span><span>strike</span><span>expiry</span><span>premium</span><span>margin</span><span>roll</span><span>delta</span><span>theta</span><span>KYC</span><span>assignment</span></div></div></div>
-      <div class="why-row rv"><span class="n">03</span><div class="txt"><h3>1ndex is<br><span class="g">one ticker.</span></h3></div><div class="wv"><canvas id="wv3" aria-hidden="true"></canvas></div></div>
+    <div class="sh"><p class="eyebrow"><b>03</b> why</p><h2 class="h2 rv">one bet, one hedge.</h2></div>
+    <div class="why3">
+      <div class="wcard rv"><span class="n">01</span><h3>your bag is<br>one bet.</h3><div class="wv"><div class="wbars" id="whyBars"><small>reading the market…</small></div></div></div>
+      <div class="wcard rv" style="--d:1"><span class="n">02</span><h3>a real hedge<br>is a chore.</h3><div class="wv"><div class="chain" aria-hidden="true"><span>broker</span><span>account</span><span>options</span><span>strike</span><span>expiry</span><span>premium</span><span>margin</span><span>roll</span><span>delta</span><span>theta</span><span>KYC</span><span>assignment</span></div></div></div>
+      <div class="wcard rv" style="--d:2"><span class="n">03</span><h3>1ndex is<br><span class="g">one ticker.</span></h3><div class="wv"><canvas id="wv3" aria-hidden="true"></canvas></div></div>
     </div>
   </div>
 </section>
 
 <section class="band" id="four">
   <div class="wrap">
-    <div class="head2"><div><p class="eyebrow rv"><b>03</b> the four</p><h2 class="h2 rv">a quarter each.<br><span class="g">nothing else.</span></h2></div></div>
+    <div class="sh"><p class="eyebrow"><b>04</b> the four</p><h2 class="h2 rv">a quarter each.</h2></div>
     <div class="picker">
       <div class="ringcol rv"><div class="ringwrap"><canvas id="ringCv" role="img" aria-label="the 1ndex ring: four slices, a quarter each. Pick a slice."></canvas></div><div class="chips4" id="chips4" role="tablist" aria-label="the four"></div></div>
       <div class="detail" id="detail" aria-live="polite"><div class="empty">loading the four…</div></div>
@@ -90,14 +102,13 @@
 
 <section class="band" id="push">
   <div class="wrap">
-    <div class="head2"><div><p class="eyebrow rv"><b>04</b> crash test</p><h2 class="h2 rv">push the market.</h2></div></div>
+    <div class="sh"><p class="eyebrow"><b>05</b> crash test</p><h2 class="h2 rv">push the market.</h2></div>
     <div class="push">
       <div class="dial rv">
         <span>if the S&amp;P 500 moves</span>
         <b class="mv" id="mv">−5%</b>
-        <span>in one day</span>
         <input type="range" class="big" id="touch" min="-15" max="5" step="1" value="-5" aria-label="S&amp;P 500 move in one day">
-        <div class="presets" id="presets"><button data-v="2">+2% good day</button><button data-v="-1">−1% a dip</button><button data-v="-4">−4% bad day</button><button data-v="-10">−10% crash</button></div>
+        <div class="presets" id="presets"><button data-v="2">+2%</button><button data-v="-1">−1%</button><button data-v="-4">−4%</button><button data-v="-10">−10%</button></div>
         <div class="totals">
           <div class="tot four"><span>$100 in the four</span><b id="tFour">—</b><em id="tFourD"></em></div>
           <div class="tot"><span>$100 in the S&amp;P 500</span><b id="tSpy">—</b><em id="tSpyD"></em></div>
@@ -111,7 +122,7 @@
 
 <section class="band" id="coin">
   <div class="wrap">
-    <div class="head2"><div><p class="eyebrow rv"><b>05</b> the coin</p><h2 class="h2 rv">every trade<br><span class="g">buys the four.</span></h2></div></div>
+    <div class="sh"><p class="eyebrow"><b>06</b> the coin</p><h2 class="h2 rv">every trade <span class="g">buys the four.</span></h2></div>
     <div class="sim rv" id="sim"><span>try a trade of</span><button data-v="0.5">0.5 SOL</button><button data-v="1" class="on">1 SOL</button><button data-v="5">5 SOL</button><button data-v="25">25 SOL</button></div>
     <div class="pipe rv" id="pipe"><canvas id="pipeCv" aria-label="how a trade turns into the four"></canvas><div id="pipeLabs"></div></div>
     <div class="cgrid">
@@ -119,13 +130,11 @@
       <div class="card rv" style="--d:1"><h3>the launchpad</h3>
         <dl class="spec">
           <div><dt>launchpad</dt><dd>1ndex, on Raydium LaunchLab</dd></div>
-          <div><dt>fee to the index</dt><dd>1% of every curve trade</dd></div>
-          <div><dt>LaunchLab protocol fee</dt><dd>0.25%</dd></div>
+          <div><dt>fee to the index</dt><dd>1% of every trade</dd></div>
           <div><dt>creator fee</dt><dd>none</dd></div>
           <div><dt>supply</dt><dd>1,000,000,000</dd></div>
           <div><dt>mint and freeze authority</dt><dd>none</dd></div>
-          <div><dt>graduates at</dt><dd>85 SOL, into Raydium CPMM</dd></div>
-          <div><dt>LP at graduation</dt><dd>50% burned · 50% fee key to the treasury</dd></div>
+          <div><dt>graduates at</dt><dd>85 SOL, into Raydium</dd></div>
         </dl></div>
     </div>
   </div>
@@ -133,19 +142,19 @@
 
 <section class="band" id="treasury">
   <div class="wrap">
-    <div class="head2"><div><p class="eyebrow rv"><b>06</b> the treasury</p><h2 class="h2 rv">four vaults,<br>filled on-chain.</h2></div></div>
+    <div class="sh"><p class="eyebrow"><b>07</b> the treasury</p><h2 class="h2 rv">four vaults, on-chain.</h2></div>
     <div class="vaults" id="vaults"></div>
-    <div class="tsum rv"><span>held <b id="held">—</b></span><span>waiting to be claimed <b id="unclaimed">—</b></span><span>next rebalance <b id="reb2">—</b></span><span id="treWallet"></span></div>
-    <div class="acts rv"><div id="activity"><div class="empty">every claim and buy shows up here, from the first one.</div></div></div>
+    <div class="tsum rv"><span>held <b id="held">—</b></span><span>to claim <b id="unclaimed">—</b></span><span>next rebalance <b id="reb2">—</b></span><span id="treWallet"></span></div>
+    <div class="acts rv"><div id="activity"></div></div>
   </div>
 </section>
 
 <section class="band" id="pools">
   <div class="wrap">
-    <div class="head2"><div><p class="eyebrow rv"><b>07</b> under the hood</p><h2 class="h2 rv">under<br>the hood.</h2></div></div>
+    <div class="sh"><p class="eyebrow"><b>08</b> under the hood</p><h2 class="h2 rv">pools and risks.</h2></div>
     <div class="pgrid">
-      <div class="rv"><h3>pools</h3><div id="poolList"><div class="empty">loading…</div></div></div>
-      <div class="rv" style="--d:1"><h3>before you buy</h3>
+      <div class="rv"><div id="poolList"><div class="empty">loading…</div></div></div>
+      <div class="rv" style="--d:1">
         <ol class="risks">
           <li><span><b>A hedge, not a promise.</b> The short Nasdaq and VIX bleed in calm weeks.</span></li>
           <li><span><b>Thin pools.</b> Big buys move the VIX price.</span></li>
@@ -160,8 +169,8 @@
 <section class="outro" id="end">
   <canvas id="outroCv" aria-hidden="true"></canvas>
   <div class="wrap">
-    <h2 class="h2 rv">be on the<br><span class="g">other side.</span></h2>
-    <div class="cta rv"><a class="btn btn-go" href="#coin">get $1NDEX</a><a class="btn" href="/docs">read the docs</a></div>
+    <h2 class="h2 rv">be on the <span class="g">other side.</span></h2>
+    <div class="cta rv"><a class="btn btn-go" href="#coin">get $1NDEX</a><a class="btn" href="/docs">docs</a></div>
   </div>
 </section>
 
@@ -170,6 +179,6 @@
 <div class="toast" id="toast" role="status"></div>
 <script src="/assets/art.js" defer></script>
 <script src="/assets/sound.js" defer></script>
-<script src="/assets/x.js?v=2" defer></script>
+<script src="/assets/x.js?v=3" defer></script>
 </body>
 </html>

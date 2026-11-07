@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>1ndex</title>
-<meta name="description" content="1ndex is the coin that hedges against the stock market. One ticker on Raydium for gold, the short Nasdaq, VIX and dollars, and every trade buys more of them.">
+<meta name="description" content="Launch a coin that hedges the stock market. Pick a hedge from gold, silver, the short Nasdaq, VIX and cash, launch on Raydium LaunchLab, and 1% of every trade buys it.">
 <meta property="og:title" content="1ndex">
-<meta property="og:description" content="The coin that hedges against the stock market.">
+<meta property="og:description" content="Launch a coin that hedges the stock market.">
 <meta property="og:image" content="https://1ndex-gamma.vercel.app/og.png">
 <meta property="og:url" content="https://1ndex-gamma.vercel.app/">
 <meta name="twitter:card" content="summary_large_image">
@@ -18,43 +18,40 @@
 <link rel="apple-touch-icon" href="/icon.png?v=1">
 <link rel="preload" href="/assets/fonts/interd-700.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/assets/fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/assets/x.css?v=5">
+<link rel="stylesheet" href="/assets/x.css?v=6">
 </head>
 <body class="intro-on">
 <canvas id="bg" aria-hidden="true"></canvas>
 
 <canvas id="intro" aria-hidden="true"></canvas>
-<a class="skip" href="#stocks">skip to content</a>
+<a class="skip" href="#launch">skip to the launcher</a>
 
 <nav class="nav" id="nav">
   <a class="nav-brand" href="#top" aria-label="1ndex, back to the top"><canvas class="ringmark" data-size="22"></canvas><b>1ndex</b></a>
-  <div class="nav-links">
-    <a href="#how">how it works</a><a href="#stocks">stocks</a><a href="#four">the four</a><a href="#fees">fees</a><a href="#faq">faq</a><a href="/docs">docs</a>
-  </div>
+  <div class="nav-links"><a href="#how">how it works</a><a href="#launch">launch</a><a href="#hedges">hedges</a><a href="#stocks">stocks</a><a href="#coins">coins</a><a href="#faq">faq</a><a href="/docs">docs</a></div>
   <button class="snd" id="snd" aria-label="sound on or off" title="sound"><span></span><span></span><span></span><span></span></button>
-  <a class="btn btn-go btn-sm" href="#fees">$1NDEX</a>
+  <button class="btn btn-go btn-sm" id="wallet">Connect wallet</button>
   <div class="prog" aria-hidden="true"><i id="prog"></i></div>
 </nav>
 
 <main id="top">
 
 <section class="hero2" id="hero">
-  <div class="fcard fl1" data-k="GOLD" aria-hidden="true"></div><div class="fcard fl2" data-k="SQQQ" aria-hidden="true"></div><div class="fcard fl3" data-k="VIX" aria-hidden="true"></div><div class="fcard fl4" data-k="USD" aria-hidden="true"></div>
+  <div class="fcard fl1" data-k="G" aria-hidden="true"></div><div class="fcard fl2" data-k="Q" aria-hidden="true"></div><div class="fcard fl3" data-k="V" aria-hidden="true"></div><div class="fcard fl4" data-k="S" aria-hidden="true"></div>
   <div class="wrap h2wrap">
-    <p class="pill" id="live"><i></i><span id="liveTxt">live on Solana · launching on Raydium LaunchLab</span></p>
-    <h1 class="h1">The coin that <span class="hl">hedges</span><br>the stock market.</h1>
-    <p class="sub">Gold, the short Nasdaq, VIX and dollars, a quarter each. Every trade of $1NDEX buys more of them.</p>
-    <div class="cta"><a class="btn btn-go" href="#fees">Get $1NDEX →</a><a class="btn" href="#four">See the four</a></div>
+    <h1 class="h1">Launch a coin that <span class="hl">hedges</span><br>the stock market.</h1>
+    <p class="sub">Pick a hedge from gold, silver, the short Nasdaq, VIX and cash. Launch your coin on Raydium in one signature. 1% of every trade buys your hedge.</p>
+    <div class="cta"><a class="btn btn-go" href="#launch">Launch a coin →</a><a class="btn" href="#hedges">See the hedges</a></div>
   </div>
   <div class="wrap">
     <div class="win rv" id="win">
-      <div class="win-bar"><span class="dots"><i></i><i></i><i></i></span><span class="win-url">1ndex · the index, live</span><span class="win-live"><i></i>live</span></div>
+      <div class="win-bar"><span class="dots"><i></i><i></i><i></i></span><span class="win-url">1ndex · hedges, live</span><span class="win-live"><i></i>live</span></div>
       <div class="win-body">
         <div class="wb-main">
-          <small>the 1ndex four · 24h</small><b class="wb-big" id="hwFour">—</b>
-          <div class="wb-vs"><span>S&amp;P 500 <b id="hwSpy">—</b></span><span>stocks down <b id="hwDn">—</b></span><span>next rebalance <b id="reb">—</b></span></div>
-          <div class="wb-chart"><canvas id="hwChart" aria-label="15 days: the S&amp;P 500 against the four"></canvas></div>
-          <div class="wb-leg"><span class="lg spy">the S&amp;P 500</span><span class="lg ndx">the four</span><span id="hwLvl"></span></div>
+          <small>the classic hedge · gold, short Nasdaq, VIX, dollars · 24h</small><b class="wb-big" id="hwFour">—</b>
+          <div class="wb-vs"><span>S&amp;P 500 <b id="hwSpy">—</b></span><span>stocks down <b id="hwDn">—</b></span><span>coins on 1ndex <b id="hwCoins">—</b></span></div>
+          <div class="wb-chart"><canvas id="hwChart" aria-label="15 days: the S&amp;P 500 against the classic hedge"></canvas></div>
+          <div class="wb-leg"><span class="lg spy">the S&amp;P 500</span><span class="lg ndx">the classic hedge</span><span>15 days</span></div>
         </div>
         <div class="wb-side" id="hwList"><div class="empty">reading the market…</div></div>
       </div>
@@ -66,35 +63,71 @@
 
 <section class="band" id="how">
   <div class="wrap">
-    <div class="shc"><p class="kick"><i></i>how it works</p><h2 class="h2c rv">Three steps. One coin.</h2><p class="subc rv">From a trade on Raydium to a hedge against the stock market, on-chain.</p></div>
+    <div class="shc"><p class="kick"><i></i>how it works</p><h2 class="h2c rv">Three steps. One signature.</h2><p class="subc rv">From an idea to a live coin whose trading buys a hedge against the stock market, in under a minute.</p></div>
     <div class="how3">
-      <div class="hcard rv"><div class="hv hv1"><div class="swapc"><div><small>you pay</small><b>1 SOL</b></div><span>↓</span><div><small>you get</small><b>$1NDEX</b></div><em>Raydium LaunchLab</em></div></div><span class="hn">01</span><h3>Buy $1NDEX</h3><p>One coin on its own Raydium LaunchLab launchpad. No presale, no creator fee.</p></div>
-      <div class="hcard rv" style="--d:1"><div class="hv hv2"><div class="split"><i style="flex:1"></i><i style="flex:.25"></i><i style="flex:5"></i></div><div class="splitl"><span><i class="s1"></i>1% to the index</span><span><i class="s2"></i>0.25% LaunchLab</span><span><i class="s3"></i>your trade</span></div></div><span class="hn">02</span><h3>1% goes to the index</h3><p>Every trade on the curve pays 1% to the index treasury. Nothing goes to the creator.</p></div>
-      <div class="hcard rv" style="--d:2"><div class="hv hv3" id="howBars"><div><i style="--c:var(--s1)"></i><span>gold</span></div><div><i style="--c:var(--s2)"></i><span>SQQQ</span></div><div><i style="--c:var(--s3)"></i><span>VIX</span></div><div><i style="--c:var(--s4)"></i><span>USD</span></div></div><span class="hn">03</span><h3>The treasury buys the four</h3><p>It tops up whichever of the four is under a quarter, and rebalances every Monday.</p></div>
+      <div class="hcard rv"><div class="hv hvp"><div class="pchips"><span class="on">The classic</span><span>Crash shield</span><span>Safe haven</span><span>Gold bug</span><span>Custom</span></div><div class="pbar"><i style="flex:25;background:var(--s1)"></i><i style="flex:25;background:var(--s2)"></i><i style="flex:25;background:var(--s3)"></i><i style="flex:25;background:var(--s4)"></i></div></div><span class="hn">01</span><h3>Pick a hedge</h3><p>Up to four of nine assets: three kinds of gold, silver, the short Nasdaq, VIX, dollars and euros. Or take a ready mix.</p></div>
+      <div class="hcard rv" style="--d:1"><div class="hv"><div class="coinmock"><img src="/coins/1.png" alt=""><div><b>Crash Shield</b><small>$SHIELD · on Raydium LaunchLab</small></div><em>sign once</em></div></div><span class="hn">02</span><h3>Launch your coin</h3><p>Name, ticker, image. One transaction creates it on the 1ndex launchpad on Raydium LaunchLab. Your hedge goes into its on-chain metadata.</p></div>
+      <div class="hcard rv" style="--d:2"><div class="hv hv3" id="howBars"><div><i style="--c:var(--s1)"></i><span>gold</span></div><div><i style="--c:var(--s2)"></i><span>SQQQ</span></div><div><i style="--c:var(--s3)"></i><span>VIX</span></div><div><i style="--c:var(--s4)"></i><span>USD</span></div></div><span class="hn">03</span><h3>Every trade buys it</h3><p>1% of every trade goes to the hedge treasury, which buys that coin's hedge. Every buy is a public transaction.</p></div>
     </div>
+  </div>
+</section>
+
+<section class="band" id="launch">
+  <div class="wrap">
+    <div class="shc"><p class="kick"><i></i>the launcher</p><h2 class="h2c rv">Give your coin a hedge.</h2><p class="subc rv">Pick the hedge, name the coin, sign once. It launches on Raydium LaunchLab and starts trading right away.</p></div>
+    <div class="lcard rv">
+      <div class="lsteps" id="lsteps"><span class="on" data-s="1">1 · Hedge</span><span data-s="2">2 · Coin</span><span data-s="3">3 · Launch</span><em id="padState">reading the launchpad…</em></div>
+      <div class="lgrid">
+        <div class="lcol">
+          <h3>Pick a hedge</h3>
+          <div class="presets2" id="presets2"></div>
+          <div class="assets9" id="assets9"></div>
+          <div class="splitbar" id="splitbar"></div>
+          <p class="hint" id="splitTxt"></p>
+        </div>
+        <div class="lcol">
+          <h3>Your coin</h3>
+          <label class="fld"><span>Name</span><input id="cName" maxlength="32" placeholder="Crash Shield" autocomplete="off"></label>
+          <label class="fld"><span>Ticker</span><input id="cSym" maxlength="10" placeholder="SHIELD" autocomplete="off"></label>
+          <div class="fld"><span>Image</span><div class="imgs" id="imgs"></div><input id="cImg" placeholder="or paste an https image link" autocomplete="off"></div>
+          <label class="fld"><span>First buy (optional)</span><div class="inl"><input id="cBuy" type="number" min="0" max="20" step="0.1" placeholder="0"><em>SOL</em></div></label>
+        </div>
+        <div class="lcol lsum">
+          <h3>Launch</h3>
+          <div class="preview" id="preview"></div>
+          <ul class="checks"><li>Raydium LaunchLab · 1,000,000,000 supply</li><li>Graduates to a Raydium pool at 85 SOL</li><li>1% of every trade buys your hedge</li><li>No creator fee, no 1ndex cut</li></ul>
+          <button class="btn btn-go lbtn" id="launchBtn">Connect wallet</button>
+          <div class="lstat" id="lstat" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="hedges">
+  <div class="wrap">
+    <div class="shc"><p class="kick"><i></i>the hedges · live</p><h2 class="h2c rv">Nine ways to bet against a crash.</h2><p class="subc rv">Every asset trades on Solana and can be bought through Jupiter. Prices from Dexscreener, 15 days of history from GeckoTerminal.</p></div>
+    <div class="hgrid" id="hgrid"></div>
   </div>
 </section>
 
 <section class="band" id="stocks">
   <div class="wrap">
-    <div class="shc"><p class="kick"><i></i>real stocks · live</p><h2 class="h2c rv">The stock market, right now.</h2><p class="subc rv">Twelve real stocks trading on Solana as tokens, from Dexscreener. Red when they fall.</p></div>
+    <div class="shc"><p class="kick"><i></i>real stocks · live</p><h2 class="h2c rv">What you're hedging against.</h2><p class="subc rv">Twenty real stocks trading on Solana as tokens. Red when they fall.</p></div>
     <div class="board">
       <div class="bsum rv">
         <b id="bsN">—</b><span id="bsT">reading the market…</span>
-        <div class="bvs"><div><small>stocks, average</small><b id="bsA">—</b></div><div><small>the four</small><b id="bsF">—</b></div></div>
+        <div class="bvs"><div><small>stocks, average</small><b id="bsA">—</b></div><div><small>the classic hedge</small><b id="bsF">—</b></div></div>
       </div>
       <div class="tiles" id="tiles"></div>
     </div>
   </div>
 </section>
 
-<section class="band" id="four">
+<section class="band" id="coins">
   <div class="wrap">
-    <div class="shc"><p class="kick"><i></i>the four</p><h2 class="h2c rv">Four assets. A quarter each.</h2><p class="subc rv">Things that tend to hold up or rise when stocks fall. Pick a slice of the ring.</p></div>
-    <div class="picker">
-      <div class="ringcol rv"><div class="ringwrap"><canvas id="ringCv" role="img" aria-label="the 1ndex ring: four slices, a quarter each. Pick a slice."></canvas></div><div class="chips4" id="chips4" role="tablist" aria-label="the four"></div></div>
-      <div class="detail" id="detail" aria-live="polite"><div class="empty">loading the four…</div></div>
-    </div>
+    <div class="shc"><p class="kick"><i></i>launched on 1ndex</p><h2 class="h2c rv">Coins with a hedge.</h2><p class="subc rv">Every coin on the 1ndex launchpad, newest first, with the hedge its trading buys. Read from Raydium.</p></div>
+    <div class="cgrid2" id="cgrid"><div class="empty">reading the launchpad…</div></div>
   </div>
 </section>
 
@@ -103,29 +136,29 @@
     <div class="feecard rv">
       <div class="fc-l">
         <p class="kick"><i></i>the split</p>
-        <h2 class="h2c left">1% of every trade.<br><span class="g">Straight to the four.</span></h2>
-        <div class="fbar"><div class="f1"><b>1%</b><small>the index</small></div><div class="f2"><b>0.25%</b><small>LaunchLab</small></div><div class="f3"><b>0%</b><small>creator</small></div></div>
+        <h2 class="h2c left">1% of every trade.<br><span class="g">Straight into its hedge.</span></h2>
+        <div class="fbar"><div class="f1"><b>1%</b><small>the hedge</small></div><div class="f2"><b>0.25%</b><small>LaunchLab</small></div><div class="f3"><b>0%</b><small>creator · 1ndex</small></div></div>
         <ul class="flist">
-          <li><i>↻</i><div><b>Raydium LaunchLab's own fee</b><span>The 1% is the launchpad fee, set in LaunchLab's program when the launchpad is made.</span></div></li>
-          <li><i>⌁</i><div><b>Claimed to the treasury</b><span>Fees collect in LaunchLab's vault. The treasury claims them and buys the four.</span></div></li>
-          <li><i>◆</i><div><b>It keeps paying after graduation</b><span>At 85 SOL the coin moves to Raydium. Half the LP is burned, half is a fee key that pays the treasury.</span></div></li>
+          <li><i>↻</i><div><b>Raydium LaunchLab's own fee</b><span>The 1% is the launchpad fee, set in LaunchLab's program when the 1ndex launchpad was made. It can't be changed per coin.</span></div></li>
+          <li><i>⌁</i><div><b>Bought for that coin's hedge</b><span>The treasury claims the fees and reads each coin's hedge from its metadata link on-chain, then buys it through Jupiter.</span></div></li>
+          <li><i>◆</i><div><b>It keeps paying after graduation</b><span>At 85 SOL a coin moves to a Raydium pool. Half the LP is burned, half is a fee key that keeps paying the hedge treasury.</span></div></li>
         </ul>
-        <div id="coinBox" class="coinbox"><div class="empty">reading the chain…</div></div>
       </div>
       <div class="fc-r">
         <div class="term">
-          <div class="term-bar"><span class="dots"><i></i><i></i><i></i></span><span>launchpad config · Raydium LaunchLab</span></div>
-          <pre><span class="ok">✓</span> createPlatformConfig   <span class="m">the 1ndex launchpad</span>
-<span class="ok">✓</span> fee rate               <span class="m">1% → index treasury</span>
+          <div class="term-bar"><span class="dots"><i></i><i></i><i></i></span><span>a launch on 1ndex · Raydium LaunchLab</span></div>
+          <pre><span class="ok">✓</span> launchpad              <span class="m">1ndex</span>
+<span class="ok">✓</span> fee rate               <span class="m">1% → hedge treasury</span>
 <span class="ok">✓</span> creator fee            <span class="m">0</span>
 <span class="ok">✓</span> supply                 <span class="m">1,000,000,000</span>
 <span class="ok">✓</span> mint / freeze auth.    <span class="m">none</span>
 <span class="ok">✓</span> migrate                <span class="m">Raydium CPMM at 85 SOL</span>
 <span class="ok">✓</span> LP at graduation       <span class="m">50% burned · 50% fee key</span>
+<span class="ok">✓</span> hedge                  <span class="m">in the metadata link, e.g. h=Q50V50</span>
 
 <span class="c">launchLab program</span>  LanMV9…duJ3uj
 <span class="c">network</span>            Solana mainnet</pre>
-          <div class="term-pills"><span>no presale</span><span>no creator fee</span><span>public treasury</span></div>
+          <div class="term-pills"><span>one signature</span><span>no creator fee</span><span>public treasury</span></div>
         </div>
       </div>
     </div>
@@ -134,9 +167,9 @@
 
 <section class="band" id="treasury">
   <div class="wrap">
-    <div class="shc"><p class="kick"><i></i>the treasury</p><h2 class="h2c rv">Four vaults, on-chain.</h2><p class="subc rv">Every claim and every buy is a public transaction. Each vault fills toward a quarter.</p></div>
-    <div class="vaults" id="vaults"></div>
-    <div class="tsum rv"><span>held <b id="held">—</b></span><span>to claim <b id="unclaimed">—</b></span><span>next rebalance <b id="reb2">—</b></span><span id="treWallet"></span></div>
+    <div class="shc"><p class="kick"><i></i>the hedge treasury</p><h2 class="h2c rv">Everything it holds, on-chain.</h2><p class="subc rv">One public wallet buys the hedge for every coin on 1ndex. These are its holdings of each asset, live.</p></div>
+    <div class="vaults v9" id="vaults"></div>
+    <div class="tsum rv"><span>held <b id="held">—</b></span><span>fees waiting to be claimed <b id="unclaimed">—</b></span><span id="treWallet"></span></div>
     <div class="acts rv"><div id="activity"></div></div>
   </div>
 </section>
@@ -145,19 +178,19 @@
   <div class="wrap">
     <div class="shc"><p class="kick"><i></i>the fine print, on-chain</p><h2 class="h2c rv">Rules nobody can bend.</h2></div>
     <div class="rules6">
-      <div class="rcard rv"><span>01</span><h3>A quarter each</h3><p>Gold, the short Nasdaq, VIX and dollars, topped back to 25% every Monday.</p></div>
-      <div class="rcard rv" style="--d:1"><span>02</span><h3>1% of every trade</h3><p>The launchpad fee goes to the index treasury. It's set when the launchpad is made.</p></div>
-      <div class="rcard rv" style="--d:2"><span>03</span><h3>No creator fee</h3><p>Nobody takes a cut of trades besides the index and LaunchLab's 0.25%.</p></div>
-      <div class="rcard rv"><span>04</span><h3>Fixed supply</h3><p>1,000,000,000 $1NDEX. No mint or freeze authority.</p></div>
-      <div class="rcard rv" style="--d:1"><span>05</span><h3>Half the LP burned</h3><p>At graduation half the liquidity is burned for good, the other half pays the treasury.</p></div>
-      <div class="rcard rv" style="--d:2"><span>06</span><h3>Every buy in public</h3><p>The treasury wallet and every claim and buy are on Solscan, linked from this page.</p></div>
+      <div class="rcard rv"><span>01</span><h3>Your hedge, on-chain</h3><p>The hedge you pick is written into your coin's metadata link at launch. Anyone can read it, nobody can edit it.</p></div>
+      <div class="rcard rv" style="--d:1"><span>02</span><h3>1% of every trade</h3><p>The launchpad fee goes to the hedge treasury. It's set in Raydium LaunchLab, not by this website.</p></div>
+      <div class="rcard rv" style="--d:2"><span>03</span><h3>No creator fee, no cut</h3><p>Nobody takes a share of trades besides the hedge and LaunchLab's own 0.25%.</p></div>
+      <div class="rcard rv"><span>04</span><h3>Fixed supply</h3><p>Every coin: 1,000,000,000 tokens, no mint or freeze authority, 793.1M sold on the curve.</p></div>
+      <div class="rcard rv" style="--d:1"><span>05</span><h3>Half the LP burned</h3><p>At graduation half the liquidity is burned for good, the other half pays the hedge treasury.</p></div>
+      <div class="rcard rv" style="--d:2"><span>06</span><h3>Every buy in public</h3><p>The treasury wallet and every claim and buy show on Solscan, linked from this page.</p></div>
     </div>
   </div>
 </section>
 
 <section class="band" id="pools">
   <div class="wrap">
-    <div class="shc"><p class="kick"><i></i>under the hood</p><h2 class="h2c rv">Where the four trade.</h2><p class="subc rv">The deepest Solana pool for each, live. The treasury buys through Jupiter.</p></div>
+    <div class="shc"><p class="kick"><i></i>under the hood</p><h2 class="h2c rv">Where the hedges trade.</h2><p class="subc rv">The deepest Solana pool for each, live. The treasury buys through Jupiter, which routes across all of them.</p></div>
     <div class="ptab rv" id="poolList"><div class="empty">loading…</div></div>
   </div>
 </section>
@@ -166,24 +199,24 @@
   <div class="wrap">
     <div class="shc"><p class="kick"><i></i>faq</p><h2 class="h2c rv">Questions, answered.</h2></div>
     <div class="faq2">
-      <details><summary>What is 1ndex?</summary><p>A coin on Raydium LaunchLab whose 1% trading fee buys four things that tend to hold up or rise when stocks fall: gold, the short Nasdaq, VIX and dollars.</p></details>
-      <details><summary>Why these four?</summary><p>Gold doesn't follow stocks. The short Nasdaq aims for −3× the Nasdaq-100 each day. VIX spikes when stocks crash. Dollars don't fall when stocks fall.</p></details>
-      <details><summary>Where does the 1% go?</summary><p>To the index treasury. It claims the fees from LaunchLab's vault and buys whichever of the four is under a quarter.</p></details>
-      <details><summary>Is $1NDEX a share of the treasury?</summary><p>No. It's a coin, not a fund. It doesn't redeem for the four, and it can go to zero.</p></details>
-      <details><summary>Does it always rise when stocks fall?</summary><p>No. Gold can fall with stocks, and the short Nasdaq and VIX lose value in calm or choppy weeks. It's a hedge, not a promise.</p></details>
-      <details><summary>When does it rebalance?</summary><p>Every Monday, back to a quarter each. The countdown is in the live window at the top of this page.</p></details>
-      <details><summary>Where do the prices come from?</summary><p>Dexscreener for live prices, GeckoTerminal for 4-hour history, all from tokens trading on Solana.</p></details>
-      <details><summary>Who holds the treasury?</summary><p>The wallet that made the launchpad. Its address and every transaction show on this page once $1NDEX launches.</p></details>
-      <details><summary>Is it affiliated with Raydium or the issuers?</summary><p>No. 1ndex is independent and not affiliated with Raydium, ProShares, SPDR, Circle or any issuer.</p></details>
-      <details><summary>What can go wrong?</summary><p>Thin pools move on big buys, issuers can pause their tokens, and the coin's price is set by its own trading. Not financial advice.</p></details>
+      <details><summary>What is 1ndex?</summary><p>A launchpad on Raydium LaunchLab where every coin comes with a hedge against the stock market. 1% of each coin's trading buys the hedge its creator picked.</p></details>
+      <details><summary>What can I pick as a hedge?</summary><p>Up to four of nine assets: gold (GLDx, PAXG, XAUt0), silver (SLVon), the short Nasdaq (SQQQ), VIX (UVXY), dollars (USDC, USDT) and euros (EURC). Or a ready mix like the classic or the crash shield.</p></details>
+      <details><summary>Who holds the hedge?</summary><p>The 1ndex hedge treasury, one public wallet. It claims the launchpad fees and buys each coin's hedge with that coin's share. Every transaction is on Solscan.</p></details>
+      <details><summary>How much does it cost to launch?</summary><p>Only Solana network fees and rent, about 0.03 SOL. A first buy is optional. 1ndex takes nothing.</p></details>
+      <details><summary>Can my hedge change later?</summary><p>No. It's written into the coin's metadata link when you launch. Launch a new coin for a new hedge.</p></details>
+      <details><summary>Does a hedge always rise when stocks fall?</summary><p>No. Gold can fall with stocks, and the short Nasdaq and VIX lose value in calm weeks. It's a hedge, not a promise.</p></details>
+      <details><summary>Is my coin a share of its hedge?</summary><p>No. A coin doesn't redeem for anything, and its price is set by its own trading. It can go to zero.</p></details>
+      <details><summary>Where do the prices come from?</summary><p>Dexscreener for live prices, GeckoTerminal for history, and Raydium's launch index for the coins on 1ndex.</p></details>
+      <details><summary>Is it affiliated with Raydium or the issuers?</summary><p>No. 1ndex is independent and not affiliated with Raydium, Jupiter, ProShares, SPDR, Paxos, Tether, Ondo, Circle or any issuer.</p></details>
+      <details><summary>What can go wrong?</summary><p>Thin pools move on big buys, issuers can pause their tokens, and fees only build a hedge if a coin trades. Not financial advice.</p></details>
     </div>
   </div>
 </section>
 
 <section class="outro" id="end">
   <div class="wrap">
-    <h2 class="h2c rv">Be on the <span class="g">other side.</span></h2>
-    <div class="cta rv"><a class="btn btn-go" href="#fees">Get $1NDEX →</a><a class="btn" href="/docs">Read the docs</a></div>
+    <h2 class="h2c rv">Launch your <span class="g">hedge.</span></h2>
+    <div class="cta rv"><a class="btn btn-go" href="#launch">Launch a coin →</a><a class="btn" href="/docs">Read the docs</a></div>
   </div>
 </section>
 
@@ -192,6 +225,6 @@
 <div class="toast" id="toast" role="status"></div>
 <script src="/assets/art.js" defer></script>
 <script src="/assets/sound.js" defer></script>
-<script src="/assets/x.js?v=5" defer></script>
+<script src="/assets/x.js?v=6" defer></script>
 </body>
 </html>

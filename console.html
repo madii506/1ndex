@@ -27,17 +27,15 @@
 <body class="dark ndx">
 <nav class="nav" id="nav"><a class="nav-brand" href="/"><b>1ndex</b></a><div class="nav-links"><a href="/">site</a><a href="/docs">docs</a></div><button class="btn btn-ink btn-sm" id="connect">connect</button></nav>
 <main class="con">
-  <span class="kick">console · for the wallet that runs 1ndex</span>
-  <h1>launch and run the index.</h1>
-  <p class="lead">Every step is a transaction you sign in your own wallet. The wallet that creates the launchpad is the treasury: LaunchLab sends the 1% fee to it when it claims, and it buys the four.</p>
-  <div class="step"><h2><span>01</span>create the 1ndex launchpad</h2><p>One transaction makes the 1ndex launchpad on Raydium LaunchLab: 1% of every curve trade to this wallet, no creator fee, and at graduation half the LP burned and half kept as a Raydium fee key.</p>
+  <span class="kick">console · for the wallet that runs the 1ndex hedge treasury</span>
+  <h1>run the hedge treasury.</h1>
+  <p class="lead">Every step is a transaction you sign in your own wallet. The wallet that creates the 1ndex launchpad is the hedge treasury: LaunchLab sends the 1% fee from every coin to it when it claims, and it buys each coin's hedge.</p>
+  <div class="step"><h2><span>01</span>create the 1ndex launchpad</h2><p>One transaction makes the 1ndex launchpad on Raydium LaunchLab: 1% of every curve trade to this wallet, no creator fee, and at graduation half the LP burned and half kept as a Raydium fee key. Send the launchpad address over afterwards so the site can open the launcher.</p>
     <div class="row"><button class="btn btn-ink" id="padBtn">create the launchpad</button><span class="mono" id="padInfo"></span></div><div class="stat" id="padStat"></div></div>
-  <div class="step"><h2><span>02</span>launch $1NDEX</h2><p>One transaction creates $1NDEX on the 1ndex launchpad: 1,000,000,000 supply, no mint or freeze authority, graduates at 85 SOL into Raydium. An optional first buy goes in the same transaction, so nobody buys before you.</p>
-    <div class="row"><label>first buy <input id="buySol" type="number" min="0" step="0.1" value="0"> SOL</label><button class="btn btn-ink" id="launchBtn">launch $1NDEX</button></div><div class="stat" id="launchStat"></div></div>
-  <div class="step"><h2><span>03</span>claim the fees</h2><p>Moves what the launchpad has collected from LaunchLab's vault to this wallet.</p>
+  <div class="step"><h2><span>02</span>claim the fees</h2><p>Moves what every coin on the launchpad has paid from LaunchLab's vault to this wallet.</p>
     <div class="row"><button class="btn btn-line" id="claimBtn">claim</button><span class="mono" id="vaultInfo"></span></div><div class="stat" id="claimStat"></div></div>
-  <div class="step"><h2><span>04</span>buy the four</h2><p>Spends SOL from this wallet on whichever of the four is furthest under a quarter, through Jupiter. It keeps 0.05 SOL for fees.</p>
-    <div class="row"><label>spend <input id="spendSol" type="number" min="0" step="0.05" value="0.5"> SOL</label><button class="btn btn-line" id="planBtn">plan</button><button class="btn btn-ink" id="buyBtn" disabled>buy</button></div>
+  <div class="step"><h2><span>03</span>buy a coin's hedge</h2><p>Pick a coin, then spend SOL on its hedge, split the way its creator chose. Each coin's hedge is read from its on-chain metadata link. Swaps go through Jupiter; the wallet keeps 0.05 SOL for fees.</p>
+    <div class="row"><label>coin <select id="coinSel"><option value="">loading coins…</option></select></label><label>spend <input id="spendSol" type="number" min="0" step="0.05" value="0.1"> SOL</label><button class="btn btn-line" id="planBtn">plan</button><button class="btn btn-ink" id="buyBtn" disabled>buy</button></div>
     <div class="plan" id="plan"></div><div class="stat" id="buyStat"></div></div>
 </main>
 <div class="toast" id="toast" role="status"></div>

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>1ndex docs</title>
-<meta name="description" content="How 1ndex works: the four, the rule, the fee, the treasury, every address and the API.">
+<meta name="description" content="How 1ndex works: launching a coin with a hedge, the nine hedges, the fee, the hedge treasury, every address and the API.">
 <meta name="theme-color" content="#0b1022">
 <link rel="icon" type="image/png" href="/favicon.png?v=2">
 <link rel="stylesheet" href="/assets/style.css?v=1">
@@ -30,78 +30,66 @@
 </style>
 </head>
 <body class="dark ndx">
-<nav class="nav" id="nav"><a class="nav-brand" href="/"><canvas class="ringmark" data-size="24"></canvas><b>1ndex</b></a><div class="nav-links"><a href="/">site</a><a href="#four">the four</a><a href="#fee">the fee</a><a href="#addresses">addresses</a><a href="#xapi">api</a></div><a class="btn btn-ink btn-sm" href="/#coin">$1NDEX</a></nav>
+<nav class="nav" id="nav"><a class="nav-brand" href="/"><canvas class="ringmark" data-size="24"></canvas><b>1ndex</b></a><div class="nav-links"><a href="/">site</a><a href="#launch">launch</a><a href="#hedges">hedges</a><a href="#fee">the fee</a><a href="#xapi">api</a></div><a class="btn btn-ink btn-sm" href="/#launch">Launch a coin</a></nav>
 <div class="xw">
-  <aside class="xt"><a href="#what">what it is</a><a href="#four">the four</a><a href="#rule">the rule</a><a href="#fee">the fee</a><a href="#treasury">the treasury</a><a href="#addresses">addresses</a><a href="#xapi">the API</a><a href="#risks">risks</a></aside>
+  <aside class="xt"><a href="#what">what it is</a><a href="#launch">launching a coin</a><a href="#hedges">the hedges</a><a href="#format">the hedge on-chain</a><a href="#fee">the fee</a><a href="#treasury">the treasury</a><a href="#addresses">addresses</a><a href="#xapi">the API</a><a href="#risks">risks</a></aside>
   <main class="xm">
     <span class="kick">docs</span>
     <h1>how <em>1ndex</em> works.</h1>
     <p class="lead">Everything 1ndex does, every address it touches, and how to check all of it yourself.</p>
-
     <section class="xs" id="what"><h2><span>01</span>what it is</h2>
-      <p><b>1ndex is the coin that hedges against the stock market.</b> $1NDEX launches on its own launchpad on Raydium LaunchLab. 1% of every trade goes to the index treasury, and the treasury buys four things that tend to hold up or rise when stocks fall: gold, the short Nasdaq, VIX and dollars, a quarter each.</p>
-      <p>The site compares the four against the S&amp;P 500 live, so you can see on any day whether the hedge is doing its job.</p></section>
-
-    <section class="xs" id="four"><h2><span>02</span>the four, live</h2>
-      <p>Prices from Dexscreener, the deepest pool for each on Solana.</p>
-      <div class="xtw"><table class="xtbl" id="ftbl"><tr><th>part</th><th>token</th><th>weight</th><th>price</th><th>24h</th><th>liquidity</th><th>mint</th></tr><tr><td colspan="7">loading…</td></tr></table></div></section>
-
-    <section class="xs" id="rule"><h2><span>03</span>the rule</h2>
-      <ul><li><b>Members:</b> four tokens on Solana that tend to hold up or rise when stocks fall, each with a real pool on Solana.</li>
-        <li><b>Weights:</b> a quarter each. Dollars count as a member, so the index is never all-in on the volatile parts.</li>
-        <li><b>Rebalance:</b> every Monday, 00:00 UTC. The treasury spends what it has collected on whichever parts are under a quarter. It only buys; it never sells into thin pools.</li>
-        <li><b>The index level</b> on the site starts at 1,000 at the beginning of the 15-day window and moves with the four from equal starting weights.</li></ul></section>
-
-    <section class="xs" id="fee"><h2><span>04</span>the fee</h2>
-      <table class="xtbl"><tr><th>what</th><th>setting</th></tr>
-        <tr><td>launchpad</td><td>1ndex, a platform config on Raydium LaunchLab</td></tr>
-        <tr><td>fee to the index</td><td>1% of every curve trade, collected in the launchpad's LaunchLab vault</td></tr>
-        <tr><td>LaunchLab protocol fee</td><td>0.25%, the same on every launchpad</td></tr>
-        <tr><td>creator fee</td><td>0%</td></tr>
-        <tr><td>supply</td><td>1,000,000,000, no mint or freeze authority</td></tr>
-        <tr><td>curve</td><td>graduates at 85 SOL into a Raydium CPMM pool</td></tr>
-        <tr><td>LP at graduation</td><td>50% burned, 50% kept as a Raydium fee key that pays the treasury the pool's trading fees</td></tr></table></section>
-
-    <section class="xs" id="treasury"><h2><span>05</span>the treasury</h2>
-      <p>The treasury is the wallet that created the 1ndex launchpad. LaunchLab sends the launchpad's fee there when it claims, and the same wallet buys the four through Jupiter. Every claim and every buy is a public transaction, and the site reads the wallet's balances straight from the chain.</p>
-      <p><b>There is no redeem.</b> $1NDEX is a coin, not a share of the treasury. Holders own a coin whose fees keep buying the hedge.</p></section>
-
-    <section class="xs" id="addresses"><h2><span>06</span>addresses</h2>
-      <div class="xtw"><table class="xtbl" id="atbl">
-        <tr><th>what</th><th>address</th></tr>
+      <p><b>1ndex is a launchpad for coins that hedge the stock market.</b> Anyone can launch a coin on the 1ndex launchpad on Raydium LaunchLab and pick a hedge for it: up to four of nine assets that tend to hold up or rise when stocks fall.</p>
+      <p>1% of every trade of every coin goes to the hedge treasury, which buys each coin's hedge with that coin's share. Nobody else takes a cut: no creator fee, no 1ndex fee.</p></section>
+    <section class="xs" id="launch"><h2><span>02</span>launching a coin</h2>
+      <ul><li><b>Pick a hedge.</b> A ready mix (the classic, crash shield, safe haven, gold bug) or up to four assets of your own, split evenly.</li>
+        <li><b>Name it.</b> Name, ticker and an image: one of six presets or your own https link.</li>
+        <li><b>Sign once.</b> One transaction creates the coin on the 1ndex launchpad on Raydium LaunchLab: 1,000,000,000 supply, 793.1M on the bonding curve, graduation at 85 SOL into a Raydium CPMM pool. An optional first buy goes in the same transaction.</li>
+        <li><b>Cost.</b> Solana network fees and rent, about 0.03 SOL, plus any first buy.</li></ul></section>
+    <section class="xs" id="hedges"><h2><span>03</span>the hedges, live</h2>
+      <p>Prices from Dexscreener, the deepest pool for each on Solana. Every asset can be bought through Jupiter.</p>
+      <div class="xtw"><table class="xtbl" id="ftbl"><tr><th>code</th><th>hedge</th><th>token</th><th>price</th><th>24h</th><th>liquidity</th><th>mint</th></tr><tr><td colspan="7">loading…</td></tr></table></div></section>
+    <section class="xs" id="format"><h2><span>04</span>the hedge, on-chain</h2>
+      <p>A coin's hedge is written into its metadata link at launch, so anyone can read it from the chain and nobody can change it. The link looks like this:</p>
+      <p><code>/api/ndx?a=t&amp;n=Crash%20Shield&amp;s=SHIELD&amp;h=Q50V50&amp;i=1</code></p>
+      <ul><li><b>h</b> is the hedge: up to four asset codes, each followed by a whole-number weight. Weights add up to 100.</li>
+        <li><b>Codes:</b> G gold (GLDx), P gold (PAXG), X gold (XAUt0), S silver (SLVon), Q short Nasdaq (SQQQ), V VIX (UVXY), U dollars (USDC), T dollars (USDT), E euros (EURC).</li>
+        <li><b>n, s, i</b> are the name, the ticker and the image (a preset number, or <code>u</code> plus a base64url https link).</li></ul></section>
+    <section class="xs" id="fee"><h2><span>05</span>the fee</h2>
+      <div class="xtw"><table class="xtbl"><tr><th>who</th><th>share of each curve trade</th></tr><tr><td>the hedge treasury</td><td>1%, the 1ndex launchpad fee</td></tr><tr><td>Raydium LaunchLab</td><td>0.25%, LaunchLab's protocol fee</td></tr><tr><td>the creator</td><td>0%</td></tr><tr><td>1ndex</td><td>0%</td></tr></table></div>
+      <p>At graduation half of each coin's LP is burned and half is kept as a Raydium fee key, which keeps paying the hedge treasury.</p></section>
+    <section class="xs" id="treasury"><h2><span>06</span>the hedge treasury</h2>
+      <p>The treasury is the wallet that created the 1ndex launchpad. LaunchLab sends the launchpad fee there when it claims. The same wallet reads each coin's hedge from its metadata link and buys it through Jupiter with that coin's share. Every claim and buy is public.</p>
+      <p><b>There is no redeem.</b> A coin is not a share of the treasury. Its price is set by its own trading.</p></section>
+    <section class="xs" id="addresses"><h2><span>07</span>addresses</h2>
+      <div class="xtw"><table class="xtbl"><tr><th>what</th><th>address</th></tr>
         <tr><td>Raydium LaunchLab program</td><td><a href="https://solscan.io/account/LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj" target="_blank" rel="noopener">LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj</a></td></tr>
-        <tr><td>Raydium CPMM program</td><td><a href="https://solscan.io/account/CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C" target="_blank" rel="noopener">CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C</a></td></tr>
-        <tr><td>the 1ndex launchpad</td><td id="aPad">not created yet</td></tr>
-        <tr><td>$1NDEX</td><td id="aMint">not launched yet</td></tr>
-        <tr><td>the treasury</td><td id="aTre">the wallet that creates the launchpad</td></tr>
-      </table></div></section>
-
-    <section class="xs" id="xapi"><h2><span>07</span>the API</h2>
-      <p>Everything on the site comes from these, and you can call them too.</p>
+        <tr><td>the 1ndex launchpad</td><td id="aPad">not open yet</td></tr>
+        <tr><td>the hedge treasury</td><td id="aTre">not open yet</td></tr></table></div></section>
+    <section class="xs" id="xapi"><h2><span>08</span>the API</h2>
       <div class="xapi">
-        <div><i>GET</i><span><code>/api/ndx?a=basket</code><p>the four and the S&amp;P 500: price, 24h change, liquidity, volume and the deepest pool.</p></span></div>
-        <div><i>GET</i><span><code>/api/ndx?a=coin</code><p>$1NDEX on its LaunchLab curve: progress, SOL raised, market cap and the fee collected so far.</p></span></div>
-        <div><i>GET</i><span><code>/api/ndx?a=treasury</code><p>what the treasury holds, what's waiting to be claimed, and the SOL it has to spend.</p></span></div>
-        <div><i>GET</i><span><code>/api/ndx?a=pad&amp;admin=&lt;wallet&gt;</code><p>a wallet's LaunchLab launchpad: fee, LP rule and unclaimed fees.</p></span></div>
-        <div><i class="post">POST</i><span><code>/api/ndx?a=buildPad · buildLaunch · claim</code><p>unsigned transactions for the console; they're signed in your own wallet.</p></span></div>
+        <div><i>GET</i><span><code>/api/ndx?a=basket</code><p>the nine hedges, twenty stocks and the S&amp;P 500: price, 24h change, liquidity, volume and the deepest pool.</p></span></div>
+        <div><i>GET</i><span><code>/api/ndx?a=coins</code><p>every coin on the 1ndex launchpad with its hedge, market cap and progress to Raydium.</p></span></div>
+        <div><i>GET</i><span><code>/api/ndx?a=t&amp;…</code><p>a coin's token metadata, built from its link.</p></span></div>
+        <div><i>GET</i><span><code>/api/ndx?a=treasury</code><p>what the hedge treasury holds and what's waiting to be claimed.</p></span></div>
+        <div><i class="post">POST</i><span><code>/api/ndx?a=buildLaunch</code><p>builds the launch transaction for your wallet to sign: wallet, name, symbol, image, hedge, buySol.</p></span></div>
       </div></section>
-
-    <section class="xs" id="risks"><h2><span>08</span>risks</h2>
-      <ul><li><b>A hedge, not a promise.</b> Gold can fall with stocks. The short Nasdaq and VIX funds reset daily and lose value in calm or choppy markets.</li>
-        <li><b>Thin pools.</b> The VIX fund's pool on Solana is small, so the treasury buys it in small pieces.</li>
-        <li><b>Issuers keep powers.</b> Tokenized funds are issued by third parties that can pause transfers or move tokens.</li>
-        <li><b>A coin.</b> $1NDEX can go to zero. The treasury only grows if people trade.</li>
-        <li><b>Independent.</b> 1ndex isn't affiliated with Raydium, ProShares, SPDR, Circle, Jupiter or any issuer. Nothing here is financial advice.</li></ul></section>
+    <section class="xs" id="risks"><h2><span>09</span>risks</h2>
+      <ul><li><b>A hedge, not a promise.</b> Gold can fall with stocks; the short Nasdaq and VIX bleed in calm weeks.</li>
+        <li><b>Thin pools.</b> Some hedges have small pools on Solana; big buys move their price.</li>
+        <li><b>Issuers keep powers.</b> Tokenized funds and stablecoins are issued by third parties that can pause or freeze their tokens.</li>
+        <li><b>Coins, not shares.</b> A coin can go to zero. Fees only build a hedge if it trades.</li>
+        <li><b>Independent.</b> Not affiliated with Raydium, Jupiter, ProShares, SPDR, Paxos, Tether, Ondo, Circle or any issuer. Not financial advice.</li></ul></section>
   </main>
 </div>
 <script>
 (() => { const $ = s => document.querySelector(s), esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const big = x => x == null ? '—' : x >= 1e6 ? '$' + (x / 1e6).toFixed(2) + 'M' : x >= 1e3 ? '$' + (x / 1e3).toFixed(1) + 'K' : '$' + x.toFixed(2);
   const pct = x => x == null ? '—' : (x >= 0 ? '+' : '−') + Math.abs(x).toFixed(2) + '%', link = a => `<a href="https://solscan.io/account/${a}" target="_blank" rel="noopener">${a}</a>`, short = a => `<a href="https://solscan.io/token/${a}" target="_blank" rel="noopener" title="${a}">${a.slice(0, 4)}…${a.slice(-4)}</a>`;
-  fetch('/api/ndx?a=basket').then(r => r.json()).then(b => { const NM = { GOLD: 'gold', SQQQ: 'the short Nasdaq', VIX: 'VIX', USD: 'dollars' };
-    $('#ftbl').innerHTML = '<tr><th>part</th><th>token</th><th>weight</th><th>price</th><th>24h</th><th>liquidity</th><th>mint</th></tr>' + [...b.members, { ...b.benchmark, symbol: 'S&P', ticker: b.benchmark.symbol, weight: null }].map(m => { const p = m.price || {};
-      return `<tr><td>${esc(NM[m.symbol] || 'benchmark')}</td><td>${esc(m.ticker)}</td><td>${m.weight ? Math.round(m.weight * 100) + '%' : '—'}</td><td>${p.usd != null ? '$' + (+p.usd).toFixed(p.usd >= 1 ? 2 : 4) : '—'}</td><td style="color:${(p.ch24 ?? 0) >= 0 ? 'var(--up)' : 'var(--down)'}">${pct(p.ch24)}</td><td>${big(p.liquidity)}</td><td>${short(m.mint)}</td></tr>`; }).join(''); }).catch(() => {});
-  fetch('/api/ndx?a=coin').then(r => r.json()).then(c => { const P = c.pinned || {}; if (P.pad) $('#aPad').innerHTML = link(P.pad); if (P.mint) $('#aMint').innerHTML = link(P.mint); if (P.treasury) $('#aTre').innerHTML = link(P.treasury); }).catch(() => {});
+  fetch('/api/ndx?a=basket').then(r => r.json()).then(b => {
+    $('#ftbl').innerHTML = '<tr><th>code</th><th>hedge</th><th>token</th><th>price</th><th>24h</th><th>liquidity</th><th>mint</th></tr>' + (b.hedges || []).map(h => { const p = h.price || {};
+      return `<tr><td>${esc(h.code)}</td><td>${esc(h.name)}</td><td>${esc(h.symbol)}</td><td>${p.usd != null ? '$' + (+p.usd).toFixed(p.usd >= 1 ? 2 : 4) : '—'}</td><td style="color:${(p.ch24 ?? 0) >= 0 ? 'var(--up)' : 'var(--down)'}">${pct(p.ch24)}</td><td>${big(p.liquidity)}</td><td>${short(h.mint)}</td></tr>`; }).join('');
+    if (b.pad) $('#aPad').innerHTML = link(b.pad); }).catch(() => {});
+  fetch('/api/ndx?a=treasury').then(r => r.json()).then(t => { if (t.live && t.wallet) $('#aTre').innerHTML = link(t.wallet); }).catch(() => {});
   // the ring mark in the nav
   const N = 22, SEG = ['#22d1f8', '#5b8cff', '#9b63ff', '#c200fb'], ONE = ['.XX.', 'XXX.', '.XX.', '.XX.', '.XX.', '.XX.', 'XXXX']; const c0 = (N - 1) / 2, cells = [];
   for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) { const r = Math.hypot(x - c0, y - c0); if (r < 5.6 || r > 10.4) continue; let a = Math.atan2(y - c0, x - c0) + Math.PI / 2; if (a < 0) a += Math.PI * 2; const f = a / (Math.PI * 2) * 4, k = Math.floor(f), off = (f - k) * (Math.PI / 2) * r; if (off < .8 || (Math.PI / 2) * r - off < .55) continue; cells.push([x, y, SEG[k]]); }

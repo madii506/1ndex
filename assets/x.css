@@ -130,7 +130,7 @@ body.intro-on .hero-top > *:not(.lockup) { transform: translateY(14px); }
 .cd-lab.on { opacity: 1; }
 .cd-big { position: absolute; left: 28px; top: 4%; z-index: 2; pointer-events: none; }
 .cd-big span { display: block; font: 600 14px var(--sans); color: var(--mute); }
-.cd-big b { display: block; font: 700 clamp(64px, 11vw, 176px)/.9 var(--disp); letter-spacing: -.06em; font-variant-numeric: tabular-nums; text-shadow: .04em .04em 0 rgba(0, 0, 0, .4); }
+.cd-big b { display: block; font: 700 clamp(60px, 8.4vw, 136px)/.9 var(--disp); letter-spacing: -.06em; font-variant-numeric: tabular-nums; text-shadow: .04em .04em 0 rgba(0, 0, 0, .4); }
 .cd-big.four b { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; text-shadow: none; filter: drop-shadow(.04em .04em 0 var(--sh)); }
 .cd-say { font: 700 clamp(20px, 2.4vw, 34px)/1.2 var(--disp); letter-spacing: -.03em; max-width: 30ch; min-height: 2.4em; }
 .cd-say .fine { font-weight: 400; letter-spacing: 0; }

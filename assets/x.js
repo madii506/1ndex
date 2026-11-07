@@ -251,7 +251,7 @@
     const four = ks[5] > .05, bv = four ? rows[5].v * ks[5] : rows[0].v * ks[0], big = $('#cdBig');
     big.classList.toggle('four', four); setT('#cdBigK', four ? 'the 1ndex four · same four hours' : 'the S&P 500'); setT('#cdBigV', spct(bv)); $('#cdBigV').style.color = four ? '' : (ks[0] > 0 ? DN : MUTE);
     // the bars, built from pixel cells, hanging from one zero line
-    const padL = 28, x0 = mob ? padL : W * .44, x1 = W - (mob ? 28 : 64), top = mob ? H * .36 : H * .08, bot = H - (mob ? 54 : 58);
+    const padL = 28, x0 = mob ? padL : W * .5, x1 = W - (mob ? 28 : 64), top = mob ? H * .36 : H * .08, bot = H - (mob ? 54 : 58);
     const ups = Math.max(1, ...rows.map(r => Math.max(0, r.v))), dns = Math.max(1, ...rows.map(r => Math.max(0, -r.v)));
     const y0 = top + (bot - top) * clamp(ups / (ups + dns), .55, .82), sc = Math.min((y0 - top - 40) / ups, (bot - y0) / dns);
     const cw = (x1 - x0) / (rows.length + .4), bw0 = Math.min(84, cw * .62), cell = mob ? 6 : 9, gapc = 3;

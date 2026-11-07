@@ -44,64 +44,98 @@
   function drawMarks() { $$('canvas.ringmark').forEach(c => { const wm = c.parentElement.querySelector('.wm'); const css = wm ? Math.round(parseFloat(getComputedStyle(wm).fontSize) * .8) : +c.dataset.size || 22;
     const g = sized(c, css * 1.06, css * 1.06); mark(g, 0, 0, css, { shadow: css > 30 }); }); }
 
-  // ---------------------------------------------------------------- the intro (~6 s), three beats and a few big words:
-  // "stocks fall." (arrows rain, the screen shakes) → "the four rise." (four columns climb in the index colours) → the columns burst into pixels that build the ring, the 1 drops in, the name rises
+  // ---------------------------------------------------------------- the background: a live, fluid marble (WebGL), steered by the mouse and the scroll
+  const BG = { gl: null, mx: .5, my: .6, tx: .5, ty: .6 };
+  function bgInit() { const c = $('#bg'); if (!c) return; const gl = c.getContext('webgl', { antialias: false, premultipliedAlpha: false }); if (!gl) { c.remove(); return; }
+    const vs = 'attribute vec2 a;void main(){gl_Position=vec4(a,0.,1.);}';
+    const fs = `precision highp float;uniform vec2 r;uniform float t;uniform vec2 m;uniform float s;
+      float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+      float n(vec2 p){vec2 i=floor(p),f=fract(p);vec2 u=f*f*(3.-2.*f);return mix(mix(h(i),h(i+vec2(1,0)),u.x),mix(h(i+vec2(0,1)),h(i+vec2(1,1)),u.x),u.y);}
+      float fbm(vec2 p){float v=0.,a=.5;mat2 R=mat2(.8,-.6,.6,.8);for(int i=0;i<5;i++){v+=a*n(p);p=R*p*2.02;a*=.5;}return v;}
+      void main(){vec2 uv=gl_FragCoord.xy/r.y;vec2 p=uv*1.15+vec2(0.,s*.18);vec2 mm=m-.5;float tt=t*.03;
+        vec2 q=vec2(fbm(p+tt),fbm(p+vec2(5.2,1.3)-tt));
+        vec2 w=vec2(fbm(p+3.2*q+vec2(1.7,9.2)+mm*.7+tt*1.4),fbm(p+3.2*q+vec2(8.3,2.8)-mm*.7));
+        float f=fbm(p+3.*w);
+        vec3 col=mix(vec3(.026,.04,.115),vec3(.075,.095,.25),smoothstep(.2,.9,f));
+        vec3 tint=mix(mix(vec3(.133,.82,.973),vec3(.357,.55,1.),w.x),mix(vec3(.608,.388,1.),vec3(.76,0.,.984),w.y),clamp(q.x*1.2,0.,1.));
+        float vein=smoothstep(.45,1.,f);col+=tint*pow(vein,1.8)*.62;
+        vec3 cy=mix(vec3(.133,.82,.973),tint,.45);col+=cy*.3*smoothstep(.045,.0,abs(f-.6))+cy*.14*smoothstep(.035,.0,abs(f-.44));
+        vec2 mp=vec2(m.x*r.x/r.y,m.y);float d=length(uv-mp);col+=tint*.07*exp(-d*d*5.);
+        vec2 c=gl_FragCoord.xy/r-.5;col*=1.-dot(c,c)*.55;gl_FragColor=vec4(col,1.);}`;
+    const sh = (type, src) => { const o = gl.createShader(type); gl.shaderSource(o, src); gl.compileShader(o); return o; };
+    const pr = gl.createProgram(); gl.attachShader(pr, sh(gl.VERTEX_SHADER, vs)); gl.attachShader(pr, sh(gl.FRAGMENT_SHADER, fs)); gl.linkProgram(pr);
+    if (!gl.getProgramParameter(pr, gl.LINK_STATUS)) { c.remove(); return; } gl.useProgram(pr);
+    const b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+    const a = gl.getAttribLocation(pr, 'a'); gl.enableVertexAttribArray(a); gl.vertexAttribPointer(a, 2, gl.FLOAT, false, 0, 0);
+    BG.gl = gl; BG.u = { r: gl.getUniformLocation(pr, 'r'), t: gl.getUniformLocation(pr, 't'), m: gl.getUniformLocation(pr, 'm'), s: gl.getUniformLocation(pr, 's') }; BG.c = c; BG.t0 = performance.now();
+    addEventListener('pointermove', e => { BG.tx = e.clientX / innerWidth; BG.ty = 1 - e.clientY / innerHeight; }, { passive: true });
+    requestAnimationFrame(bgFrame); }
+  function bgFrame(now) { requestAnimationFrame(bgFrame); if (document.hidden) return; if (BG.skip = !BG.skip) return; // ~30 fps
+    const gl = BG.gl, c = BG.c, sc = innerWidth < 700 ? .38 : .5, w = Math.round(innerWidth * sc), h = Math.round(innerHeight * sc);
+    if (c.width !== w || c.height !== h) { c.width = w; c.height = h; gl.viewport(0, 0, w, h); }
+    BG.mx += (BG.tx - BG.mx) * .06; BG.my += (BG.ty - BG.my) * .06;
+    gl.uniform2f(BG.u.r, w, h); gl.uniform1f(BG.u.t, RM ? 20 : (now - BG.t0) / 1000); gl.uniform2f(BG.u.m, BG.mx, BG.my); gl.uniform1f(BG.u.s, scrollY / innerHeight); gl.drawArrays(gl.TRIANGLES, 0, 3); }
+
+  // ---------------------------------------------------------------- the hero: floating live asset cards that drift with the mouse
+  const MONO = { GOLD: 'Au', SQQQ: 'SQ', VIX: 'VX', USD: '$' };
+  const badge = (sym, i, cls2) => `<span class="mb${cls2 ? ' ' + cls2 : ''}" style="--c:${SEG[i]}">${MONO[sym] || sym.slice(0, 2)}</span>`;
+  function renderFloats() { M().forEach((m, i) => { const el = $(`.fcard[data-k="${m.symbol}"]`); if (!el) return; if (!el.dataset.on) { el.dataset.on = 1; el.innerHTML = `${badge(m.symbol, i)}<div><b>${esc(m.ticker)}</b><small>${esc(NAMES[m.symbol])}</small></div><em></em><canvas></canvas>`; }
+    const p = m.price || {}, em = $('em', el); em.textContent = pct(p.ch24); em.className = cls(p.ch24);
+    if (S.hist) { const c = $('canvas', el); smooth(c, m.symbol === 'USD' ? S.hist.t.map(() => 1) : S.hist.ser[m.symbol], SEG[i]); } }); }
+  function heroParallax() { const h = $('#hero'); if (!h || COARSE || RM) return; h.addEventListener('pointermove', e => { const b = h.getBoundingClientRect(); h.style.setProperty('--mx', ((e.clientX - b.left) / b.width - .5).toFixed(3)); h.style.setProperty('--my', ((e.clientY - b.top) / b.height - .5).toFixed(3)); }); }
+  // a smooth sparkline with a soft area under it
+  function smooth(c, a, col) { if (!c || !a || a.length < 2) return; const [g, w, h] = fit(c); g.clearRect(0, 0, w, h); const mn = Math.min(...a), mx = Math.max(...a), Y = v => h - 3 - (v - mn) / (mx - mn || 1) * (h - 8), X = i => i / (a.length - 1) * w;
+    const fill = g.createLinearGradient(0, 0, 0, h); fill.addColorStop(0, col + '55'); fill.addColorStop(1, col + '00');
+    g.beginPath(); a.forEach((v, i) => i ? g.lineTo(X(i), Y(v)) : g.moveTo(X(i), Y(v))); g.lineTo(w, h); g.lineTo(0, h); g.closePath(); g.fillStyle = fill; g.fill();
+    g.beginPath(); a.forEach((v, i) => i ? g.lineTo(X(i), Y(v)) : g.moveTo(X(i), Y(v))); g.lineJoin = 'round'; g.lineWidth = 2; g.strokeStyle = col; g.stroke(); }
+  // cards lean toward the cursor
+  function tiltInit() { if (COARSE || RM) return; let cur = null;
+    document.addEventListener('pointermove', e => { const el = e.target.closest && e.target.closest('.hcard, .rcard, a.tile, .vault, .bsum'); if (cur && cur !== el) { cur.style.transform = ''; } cur = el; if (!el) return;
+      const b = el.getBoundingClientRect(), x = (e.clientX - b.left) / b.width - .5, y = (e.clientY - b.top) / b.height - .5; el.style.transform = `perspective(900px) rotateX(${(-y * 5).toFixed(2)}deg) rotateY(${(x * 6).toFixed(2)}deg) translateY(-3px)`; }, { passive: true }); }
+
+  // ---------------------------------------------------------------- the four: a smooth donut, one segment per asset
+  function donutFrame(now) { requestAnimationFrame(donutFrame); if (!vis.ring || document.hidden) return; const c = $('#ringCv'); if (!c) return; const [g, W] = fit(c);
+    if (RP.auto && M().length && now - RP.lastAuto > 3600) { if (RP.lastAuto) pick((RP.sel + 1) % 4, false); RP.lastAuto = now; }
+    let moving = false; RP.pop = RP.pop.map((v, k) => { const t = k === RP.sel ? 1 : k === RP.hover ? .5 : 0, n = RM ? t : v + (t - v) * .14; if (Math.abs(n - t) > .002) moving = true; return n; });
+    const key = RP.sel + ':' + RP.hover + ':' + (S.b ? S.b.at : 0); if (!moving && RP.drawn === key && RP.w === W) return; RP.drawn = moving ? null : key; RP.w = W;
+    g.clearRect(0, 0, W, W); const cx = W / 2, cy = W / 2, R = W * .37, th = W * .1, gap = .07;
+    g.lineWidth = th; g.strokeStyle = 'rgba(255,255,255,.04)'; g.beginPath(); g.arc(cx, cy, R, 0, Math.PI * 2); g.stroke();
+    for (let k = 0; k < 4; k++) { const p = RP.pop[k], a0 = -Math.PI / 2 + k * Math.PI / 2 + gap, a1 = a0 + Math.PI / 2 - 2 * gap, rr = R + p * W * .022;
+      const gr = g.createLinearGradient(cx + Math.cos(a0) * rr, cy + Math.sin(a0) * rr, cx + Math.cos(a1) * rr, cy + Math.sin(a1) * rr); gr.addColorStop(0, SEG[k]); gr.addColorStop(1, SEG[(k + 1) % 4]);
+      g.save(); g.globalAlpha = .38 + .62 * Math.max(p, 0); g.shadowColor = SEG[k]; g.shadowBlur = 34 * p; g.lineCap = 'round'; g.lineWidth = th * (1 + p * .28); g.strokeStyle = gr; g.beginPath(); g.arc(cx, cy, rr, a0, a1); g.stroke(); g.restore(); }
+    const m = M()[RP.sel]; if (m) { const pc = m.price || {}; g.textAlign = 'center'; g.textBaseline = 'middle';
+      g.fillStyle = MUTE; g.font = `600 ${Math.round(W * .042)}px IN, sans-serif`; g.fillText(NAMES[m.symbol], cx, cy - W * .1);
+      g.fillStyle = LAV; g.font = `700 ${Math.round(W * .14)}px ID, sans-serif`; g.fillText('25%', cx, cy + W * .005);
+      if (pc.ch24 != null) { g.fillStyle = pc.ch24 < 0 ? DN : UP; g.font = `700 ${Math.round(W * .045)}px IN, sans-serif`; g.fillText(pct(pc.ch24) + ' 24h', cx, cy + W * .1); } } }
+
+  // ---------------------------------------------------------------- the intro (~3.6 s), no charts and no words: pixels spiral in from the edges and build the ring,
+  // a shockwave pulses out, the ring glides into the menu and the background comes up
   function intro(done) {
     const cv = $('#intro'); const end = () => { cv.remove(); document.body.classList.remove('intro-on', 'handoff'); };
     if (RM || location.hash || scrollY > 10 || document.hidden) { end(); return done(); }
-    setTimeout(() => { if (document.body.contains(cv)) end(); }, 12000);
+    setTimeout(() => { if (document.body.contains(cv)) end(); }, 9000);
     history.scrollRestoration = 'manual'; scrollTo(0, 0);
-    const W = innerWidth, H = innerHeight, g = sized(cv, W, H), mob = W < 700;
-    const L = Math.min(W * .17, H * .24), F = L / .8; g.font = `700 ${F}px ID`; const ww = g.measureText('1ndex').width, gap = L * .12, lockW = L * 1.06 + gap + ww;
-    const lx = (W - lockW) / 2, ly = H / 2 - L / 2, r = rng(5);
-    const fitF = (txt, s) => { g.font = `700 ${s}px ID`; const w = g.measureText(txt).width; return w > W * .88 ? s * W * .88 / w : s; };
-    const FS1 = fitF('stocks fall.', Math.min(W * .13, H * .2, 180)), FS2 = fitF('the four rise.', Math.min(W * .12, H * .19, 170));
-    const rain = Array.from({ length: mob ? 46 : 96 }, () => ({ x: r() * W, y: -r() * H, s: 7 + Math.floor(r() * 3) * 4, v: 4 + r() * 6 }));
-    const rise = Array.from({ length: mob ? 30 : 64 }, () => ({ x: r() * W, y: H + r() * H * .5, s: 6 + Math.floor(r() * 3) * 3, v: 2 + r() * 3, c: SEG[Math.floor(r() * 4)] }));
-    const cs = Math.max(6, Math.round(Math.min(W, H) / 64)), colW = cs * (mob ? 4 : 5), colX = k => W * (.2 + k * .2) - colW / 2, colH = H * .4, colB = H * .93;
-    const T1 = 100, T_HIT = 720, T1_OUT = 1600, T2 = 1750, T2_OUT = 3000, T_SLICE = 3050, T_ONE = 3950, T_NAME = 4150, T_GO = 5000;
+    const W = innerWidth, H = innerHeight, g = sized(cv, W, H), r = rng(11), L = Math.round(Math.min(W * .22, H * .3) / N) * N, ox0 = (W - L) / 2, oy0 = (H - L) / 2, p0 = L / N, R0 = Math.hypot(W, H) * .6;
+    const px = CELLS.map(([x, y, k]) => { const a = r() * Math.PI * 2, d = k < 0 ? 900 + r() * 260 : r() * 650; return { x, y, k, a, R: R0 * (.75 + r() * .5), d, sp: (r() < .5 ? -1 : 1) * (1.4 + r() * 1.2) }; });
+    const T_FORM = 2050, T_PULSE = 2150, T_GO = 2700;
     let t0 = performance.now(), handoff = null, finished = false; const said = {}; const once = (k, n) => { if (!said[k]) { said[k] = 1; cue(n); } };
-    const skip = () => { if (!handoff && performance.now() - t0 < 4900) t0 = performance.now() - 4900; }; addEventListener('pointerdown', skip, { once: true }); addEventListener('keydown', skip, { once: true });
-    const word = (txt, x, y, fs, fill, a) => { if (a <= 0) return; g.globalAlpha = a; g.font = `700 ${fs}px ID`; g.textBaseline = 'middle'; g.textAlign = 'left'; g.fillStyle = SH2; g.fillText(txt, x + fs * .04, y + fs * .04); g.fillStyle = fill; g.fillText(txt, x, y); g.globalAlpha = 1; };
+    const skip = () => { if (!handoff && performance.now() - t0 < T_GO - 200) t0 = performance.now() - (T_GO - 200); }; addEventListener('pointerdown', skip, { once: true }); addEventListener('keydown', skip, { once: true });
     function frame(now) {
       const t = now - t0; g.setTransform(DPR, 0, 0, DPR, 0, 0); g.clearRect(0, 0, W, H);
       if (t > T_GO && !handoff) { const tl = ($('#heroMark') || $('.nav-brand canvas')).getBoundingClientRect(); handoff = { t: now, x: tl.left, y: tl.top, s: (tl.width / 1.06) / L }; document.body.classList.add('handoff'); document.body.classList.remove('intro-on'); }
-      let bgA = 1, X0 = lx, Y0 = ly, sc = 1;
-      if (handoff) { const k = clamp((now - handoff.t) / 1000), e = io(k); bgA = 1 - sm(clamp((k - .3) / .7)); X0 = lx + (handoff.x - lx) * e; Y0 = ly + (handoff.y - ly) * e; sc = 1 + (handoff.s - 1) * e; if (k >= 1 && !finished) { finished = true; end(); return done(); } }
-      g.globalAlpha = bgA; g.fillStyle = NAVY; g.fillRect(0, 0, W, H);
-      const kh = clamp((t - T_HIT) / 480), shake = t > T_HIT && kh < 1 ? (1 - kh) * 10 : 0; g.save(); g.translate((r() - .5) * shake, (r() - .5) * shake);
-      g.strokeStyle = 'rgba(154,166,217,.05)'; g.lineWidth = 1; for (let x = 0; x < W; x += 48) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, H); g.stroke(); } for (let y = 0; y < H; y += 48) { g.beginPath(); g.moveTo(0, y); g.lineTo(W, y); g.stroke(); }
-      if (t > T_HIT && kh < 1) { g.fillStyle = `rgba(255,90,122,${.16 * (1 - kh)})`; g.fillRect(0, 0, W, H); }
-      if (!handoff) {
-        // beat 1: stocks fall.
-        const a1 = 1 - sm(clamp((t - T1_OUT) / 420));
-        if (a1 > 0) { g.globalAlpha = .75 * a1 * bgA; for (const d of rain) { d.y += d.v * (t > T_HIT ? 1.6 : 1); if (d.y > H + 20) d.y = -20; arrow(g, d.x, d.y, d.s, DN, false); } g.globalAlpha = 1;
-          const ok = sm(clamp((t - T1_OUT) / 420)) * 80, NCd = 13, span = Math.min(W * .7, 980), cx0 = (W - span) / 2, cwd = span / NCd, bwd = Math.max(8, Math.floor(cwd * .62)), drop = H * .5 / NCd;
-          for (let i = 0; i < NCd; i++) { const ti = T1 + i * 48; if (t < ti) continue; const k = out(clamp((t - ti) / 200)), x = cx0 + i * cwd + (cwd - bwd) / 2, y0 = H * .22 + i * drop, hgt = drop * 1.7 * k;
-            g.globalAlpha = a1; g.fillStyle = 'rgba(0,0,0,.5)'; g.fillRect(x + 5, y0 + 5 + ok, bwd, hgt); g.fillStyle = DN; g.fillRect(x, y0 + ok, bwd, hgt); g.fillRect(x + bwd / 2 - 1.5, y0 - drop * .35 + ok, 3, hgt + drop * .7); g.globalAlpha = 1; if (i % 3 === 0) once('c' + i, 'tick'); }
-          if (t > T_HIT) once('hit', 'thud'); }
-        // beat 2: the four rise.
-        if (t > T2 - 100 && t < T_SLICE + 60) { const ac = 1 - clamp((t - T_SLICE) / 60);
-          g.globalAlpha = .7 * ac; for (const d of rise) { d.y -= d.v; if (d.y < -20) d.y = H + 20; arrow(g, d.x, d.y, d.s, d.c, true); } g.globalAlpha = ac;
-          for (let k = 0; k < 4; k++) { const kk = out(clamp((t - T2 - k * 110) / 800)), n = Math.floor(colH * kk / (cs + 3)), x = colX(k);
-            for (let j = 0; j < n; j++) { const y = colB - (j + 1) * (cs + 3); g.fillStyle = SH; g.fillRect(x + 4, y + 4, colW, cs); g.fillStyle = SEG[k]; g.fillRect(x, y, colW, cs); } }
-          g.globalAlpha = 1; once('w2', 'chime'); }
-      }
-      g.restore(); g.globalAlpha = 1;
-      // beat 3: the columns burst into pixels that build the ring
-      if (t > T_SLICE || handoff) {
-        const size = L * sc, p = size / N, pulse = handoff ? 0 : Math.max(0, 1 - Math.abs(t - T_ONE - 250) / 250) * .06, S0 = 1 + pulse;
-        const ox = (handoff ? X0 : lx) - size * (S0 - 1) / 2, oy = (handoff ? Y0 : ly) - size * (S0 - 1) / 2, pp = p * S0;
-        if (!frame.px) frame.px = CELLS.filter(c => c[2] >= 0).map(([x, y, k]) => ({ x, y, k, sx: colX(k) + r() * colW, sy: colB - r() * colH, d: r() * 320 }));
-        for (const q of frame.px) { const kk = handoff ? 1 : io(clamp((t - T_SLICE - q.d) / 720)), tx = ox + q.x * pp, ty = oy + q.y * pp, x = q.sx + (tx - q.sx) * kk, y = q.sy + (ty - q.sy) * kk - Math.sin(kk * Math.PI) * 60, sz = (pp + .4) * (.7 + .3 * kk);
-          if (kk >= 1) { g.fillStyle = SH; g.fillRect(tx + pp, ty + pp, pp + .4, pp + .4); } g.fillStyle = SEG[q.k]; g.fillRect(x, y, sz, sz); }
-        if (!handoff && t > T_SLICE + 320 + 720) once('lock', 'pop');
-        const k1 = handoff ? 1 : out(clamp((t - T_ONE) / 420)); if (k1 > 0) { const dy = (1 - k1) * -size * .9; g.globalAlpha = Math.min(1, k1 * 2);
-          g.fillStyle = SH; for (const [x, y, s] of CELLS) if (s < 0) g.fillRect(ox + (x + 1) * pp, oy + (y + 1) * pp + dy, pp + .4, pp + .4);
-          g.fillStyle = LAV; for (const [x, y, s] of CELLS) if (s < 0) g.fillRect(ox + x * pp, oy + y * pp + dy, pp + .4, pp + .4); g.globalAlpha = 1; if (k1 >= 1) once('one', 'tick'); }
-        const fs = F * sc; g.font = `700 ${fs}px ID`; g.textBaseline = 'middle'; g.textAlign = 'left'; let wx = (handoff ? X0 : lx) + (L * 1.06 + gap) * sc; const wy = (handoff ? Y0 : ly) + size * .5 - fs * .04;
-        const nameA = handoff ? (document.getElementById('heroMark') ? 1 : 1 - clamp((now - handoff.t) / 380)) : 1; [...'1ndex'].forEach((ch, i) => { const k = (handoff ? 1 : out(clamp((t - T_NAME - i * 70) / 460))) * nameA, cw2 = g.measureText(ch).width; if (k > 0) { const dy = (1 - k) * fs * .3; g.globalAlpha = k; g.fillStyle = SH2; g.fillText(ch, wx + fs * .045, wy + dy + fs * .045); g.fillStyle = LAV; g.fillText(ch, wx, wy + dy); g.globalAlpha = 1; } wx += cw2; });
-      }
+      let veil = .94, X0 = ox0, Y0 = oy0, sc = 1;
+      if (handoff) { const k = clamp((now - handoff.t) / 950), e = io(k); veil = .94 * (1 - sm(clamp(k * 1.4))); X0 = ox0 + (handoff.x - ox0) * e; Y0 = oy0 + (handoff.y - oy0) * e; sc = 1 + (handoff.s - 1) * e; if (k >= 1 && !finished) { finished = true; end(); return done(); } }
+      g.fillStyle = `rgba(4,7,22,${veil})`; g.fillRect(0, 0, W, H);
+      const pulse = handoff ? 0 : Math.max(0, 1 - Math.abs(t - T_PULSE - 120) / 140) * .05, S1 = sc * (1 + pulse), pp = p0 * S1, ox = X0 - L * (S1 - sc) / 2, oy = Y0 - L * (S1 - sc) / 2;
+      // the shockwave
+      if (!handoff && t > T_PULSE) { const k = clamp((t - T_PULSE) / 900); if (k < 1) { const cx = ox0 + L / 2, cy = oy0 + L / 2, rad = L * (.55 + k * 1.6); g.save(); g.globalAlpha = (1 - k) * .7; g.lineWidth = 2 + (1 - k) * 4; g.strokeStyle = grad(g, cx - rad, cy, cx + rad, cy); g.beginPath(); g.arc(cx, cy, rad, 0, Math.PI * 2); g.stroke(); g.restore(); once('pulse', 'chime'); } }
+      // the pixels
+      let all = true;
+      for (const q of px) { const k = handoff ? 1 : clamp((t - q.d) / 1150); if (k < 1) all = false; if (k <= 0) continue; const e = io(k), tx = ox + q.x * pp, ty = oy + q.y * pp, ang = q.a + q.sp * (1 - e), rad = q.R * (1 - e) * (1 - e);
+        const x = tx + Math.cos(ang) * rad, y = ty + Math.sin(ang) * rad, sz = (pp + .4) * (.5 + .5 * e);
+        if (k >= 1) { g.fillStyle = SH; g.fillRect(tx + pp * .6, ty + pp * .6, pp + .4, pp + .4); }
+        g.globalAlpha = Math.min(1, k * 3); g.fillStyle = q.k < 0 ? LAV : SEG[q.k]; g.fillRect(x, y, sz, sz); g.globalAlpha = 1; }
+      if (all && !handoff) once('lock', 'pop'); if (t > 300) once('start', 'tick');
       requestAnimationFrame(frame);
     }
     requestAnimationFrame(frame);
@@ -109,7 +143,7 @@
 
   // ---------------------------------------------------------------- live prices
   async function loadBasket() { try { S.b = await api('basket'); onBasket(); } catch (e) { if (!S.b) { $('#tape').innerHTML = '<span>prices are busy right now, retrying</span>'; setT('#liveTxt', 'prices are busy, retrying…'); setT('#say', 'prices are busy right now. the seesaw moves as soon as they answer.'); } } }
-  function onBasket() { renderTape(); renderLive(); renderWin(); renderBoard(); renderPicker(); renderPools(); stageData(); renderVaults(); }
+  function onBasket() { renderTape(); renderLive(); renderWin(); renderFloats(); renderBoard(); renderPicker(); renderPools(); stageData(); renderVaults(); }
   function renderTape() { if (!$('#tape')) return; const b = S.b, spy = b.benchmark && b.benchmark.price, items = [];
     if (spy) items.push(`S&amp;P 500 (SPYx) <em>${usd(spy.usd)}</em> <span class="${cls(spy.ch24)}">${pct(spy.ch24)}</span>`);
     M().forEach(m => { const p = m.price; if (p) items.push(`${esc(NAMES[m.symbol] || m.symbol)} (${esc(m.ticker)}) <em>${usd(p.usd)}</em> <span class="${cls(p.ch24)}">${pct(p.ch24)}</span>`); });
@@ -126,7 +160,7 @@
     if (b.ch24 != null) { hf.textContent = spct(b.ch24); hf.className = 'wb-big ' + (b.ch24 >= 0 ? 'g' : 'dn'); }
     if (spy) setT('#hwSpy', spct(spy.ch24), cls(spy.ch24));
     const st = (b.stocks || []).filter(x => x.price && x.price.ch24 != null); if (st.length) setT('#hwDn', `${st.filter(x => x.price.ch24 < 0).length} of ${st.length}`);
-    const L = $('#hwList'); if (!L.querySelector('.hrow')) { L.innerHTML = M().map((m, i) => `<div class="hrow" style="--c:${SEG[i]}" data-k="${m.symbol}"><canvas></canvas><div><b>${esc(NAMES[m.symbol])}</b><small>${esc(m.ticker)} · a quarter</small></div><div class="r"><b class="p"></b><small class="c"></small></div><span class="w"><i></i></span></div>`).join(''); $$('#hwList canvas').forEach((c, i) => drawArt(c, ARTK[i], 44)); }
+    const L = $('#hwList'); if (!L.querySelector('.hrow')) { L.innerHTML = M().map((m, i) => `<div class="hrow" style="--c:${SEG[i]}" data-k="${m.symbol}">${badge(m.symbol, i)}<div><b>${esc(NAMES[m.symbol])}</b><small>${esc(m.ticker)} · a quarter</small></div><div class="r"><b class="p"></b><small class="c"></small></div><span class="w"><i></i></span></div>`).join(''); }
     M().forEach(m => { const r = $(`.hrow[data-k="${m.symbol}"]`, L); if (!r) return; const p = m.price || {}; $('.p', r).textContent = usd(p.usd); const c = $('.c', r); c.textContent = pct(p.ch24); c.className = 'c ' + cls(p.ch24); }); }
   function winFrame(now) { requestAnimationFrame(winFrame); const c = $('#hwChart'), H = S.hist; if (!c || !H || !vis.win || document.hidden) return;
     if (!HW.t0) HW.t0 = now; const k = RM ? 1 : Math.min(1, (now - HW.t0) / 1800), [g, w, h] = fit(c); if (k >= 1 && HW.w === w) return; HW.w = k >= 1 ? w : 0;
@@ -237,14 +271,14 @@
     setT('#lvl', (1000 * (1 + n15 / 100)).toFixed(1)); setT('#hwLvl', 'index level ' + (1000 * (1 + n15 / 100)).toFixed(1)); HW.t0 = 0; HW.w = 0;
     if ($('#vsSay')) $('#vsSay').innerHTML = `15 days: stocks <span class="${cls(s15)}">${spct(s15)}</span>, the four <span class="${n15 >= 0 ? 'g' : 'dn'}">${spct(n15)}</span>.`;
     void `$100 in the four 15 days ago would be about <span class="${cls(n15)}">${usd(100 * (1 + n15 / 100), 2)}</span> now; the same $100 in the S&amp;P 500, <span class="${cls(s15)}">${usd(100 * (1 + s15 / 100), 2)}</span>. Before fees, past moves only.`;
-    renderDetail(false); CH.t0 = 0;
+    renderDetail(false); renderFloats(); CH.t0 = 0;
     // the worst 4 hours for the S&P in the window, and what each part did in those same 4 hours
     let wi = 1, wv = 0; for (let i = 1; i < H.t.length; i++) { const r = H.ser.SPY[i] / H.ser.SPY[i - 1] - 1; if (r < wv) { wv = r; wi = i; } }
     const mv = k => H.ser[k] ? (H.ser[k][wi] / H.ser[k][wi - 1] - 1) * 100 : 0;
     const rows = [{ k: 'SPY', n: 'the S&P 500', v: wv * 100, c: DN }, { k: 'GOLD', n: 'gold', v: mv('GOLD'), c: SEG[0] }, { k: 'SQQQ', n: 'the short Nasdaq', v: mv('SQQQ'), c: SEG[1] }, { k: 'VIX', n: 'VIX', v: mv('VIX'), c: SEG[2] }, { k: 'USD', n: 'dollars', v: 0, c: SEG[3] }];
     const four = .25 * (rows[1].v + rows[2].v + rows[3].v); rows.push({ k: 'FOUR', n: 'the 1ndex four', v: four, c: 'grad' });
     const t0 = new Date(H.t[wi - 1] * 1000), f = d => d.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'UTC' });
-    S.cd = { rows, when: f(t0) + '–' + new Date(H.t[wi - 1] * 1000 + 4 * 36e5).toLocaleString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'UTC' }) + ' UTC' };
+    if (!$('#cdLabs')) { S.cd = { rows, when: '' }; return; } S.cd = { rows, when: f(t0) + '–' + new Date(H.t[wi - 1] * 1000 + 4 * 36e5).toLocaleString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'UTC' }) + ' UTC' };
     whyBars([rows[0], ...(H.ser.SOL ? [{ n: 'SOL', v: mv('SOL'), c: H.ser.SOL && mv('SOL') < 0 ? DN : UP }] : []), { n: 'the 1ndex four', v: four, c: 'grad' }]); setT('#cdWhen', S.cd.when); $('#cdLabs').innerHTML = rows.map((r, i) => `<div class="cd-lab" data-i="${i}"><b>—</b>${esc(r.n)}</div>`).join(''); CD.phase = -1; }
 
   // ---------------------------------------------------------------- the crash, replayed as you scroll
@@ -258,7 +292,7 @@
       `dollars stay a dollar.`,
       four >= 0 ? `a quarter in each: the four <span class="g">made ${a(four)}</span> while stocks lost ${a(s)}.` : `a quarter in each: the four lost ${a(four)}, against ${a(s)} for stocks.`][i]; }
   function cdFrame() {
-    requestAnimationFrame(cdFrame); const sec = $('#crashday'), r = sec.getBoundingClientRect(); if (r.bottom < 0 || r.top > innerHeight || document.hidden) return;
+    if (!$('#crashday')) return; requestAnimationFrame(cdFrame); const sec = $('#crashday'), r = sec.getBoundingClientRect(); if (r.bottom < 0 || r.top > innerHeight || document.hidden) return;
     const p = clamp(-r.top / (r.height - innerHeight)), c = $('#cdCanvas'), [g, W, H] = fit(c), mob = W < 760, stick = $('#cdStick');
     const ks = PH.map(([a, b]) => RM ? (p > a ? 1 : 0) : out(clamp((p - a) / (b - a)))), phase = ks.reduce((n, k, i) => k > 0 ? i : n, -1);
     $$('#cdSteps i').forEach((el, i) => el.classList.toggle('on', i === phase));
@@ -310,12 +344,12 @@
   function pick(i, user) { if (user) RP.auto = false; if (i === RP.sel && !user) return; RP.sel = i; cue('pop'); renderDetail(true); }
   function renderDetail(swap) { const m = M()[RP.sel]; if (!m) return; const i = RP.sel, p = m.price || {}, d = $('#detail'), note = String(m.note || '');
     d.style.setProperty('--c', SEG[i]); $$('#chips4 button').forEach((b, j) => { b.classList.toggle('on', j === i); b.setAttribute('aria-selected', j === i); });
-    d.innerHTML = `<div class="dt-top"><canvas></canvas><div><div class="dt-k">0${i + 1} · a quarter of the index</div><div class="dt-tk">${esc(m.ticker)} · ${esc(m.name)}</div></div></div>`
+    d.innerHTML = `<div class="dt-top">${badge(m.symbol, i, 'lg')}<div><div class="dt-k">0${i + 1} · a quarter of the index</div><div class="dt-tk">${esc(m.ticker)} · ${esc(m.name)}</div></div></div>`
       + `<h3 class="dt-name">${esc(NAMES[m.symbol])}</h3><div class="dt-px"><b>${usd(p.usd)}</b><span class="${cls(p.ch24)}">${pct(p.ch24)} 24h</span></div><canvas class="dt-spark" aria-label="15 days"></canvas>`
       + `<p class="dt-note">${esc(note.charAt(0).toUpperCase() + note.slice(1))}</p><div class="dt-meta"><span>liquidity <b>${big(p.liquidity)}</b></span><span>24h volume <b>${big(p.vol24)}</b></span>${p.pool ? `<a href="https://dexscreener.com/solana/${p.pool}" target="_blank" rel="noopener">${esc(p.dex || 'pool')} pool ↗</a>` : ''}</div>`;
     if (swap) { d.classList.remove('swap'); void d.offsetWidth; d.classList.add('swap'); }
-    drawArt($('.dt-top canvas', d), ARTK[i], 64); const sp = $('.dt-spark', d);
-    if (S.hist) { if (m.symbol === 'USD') spark(sp, S.hist.t.map(() => 0), SEG[i]); else if (S.hist.ser[m.symbol]) spark(sp, S.hist.ser[m.symbol], SEG[i]); } }
+    RP.drawn = null; const sp = $('.dt-spark', d);
+    if (S.hist) { if (m.symbol === 'USD') smooth(sp, S.hist.t.map(() => 1), SEG[i]); else if (S.hist.ser[m.symbol]) smooth(sp, S.hist.ser[m.symbol], SEG[i]); } }
   function ringInit() { const c = $('#ringCv'); watch(c, 'ring');
     const at = e => { const b = c.getBoundingClientRect(), x = (e.clientX - b.left) / b.width - .5, y = (e.clientY - b.top) / b.height - .5, r = Math.hypot(x, y); if (r < .2 || r > .52) return -1; let a = Math.atan2(y, x) + Math.PI / 2; if (a < 0) a += Math.PI * 2; return Math.floor(a / (Math.PI / 2)) % 4; };
     c.addEventListener('pointermove', e => { const k = at(e); RP.hover = k; c.style.cursor = k >= 0 ? 'pointer' : 'default'; });
@@ -408,7 +442,7 @@
   async function loadTreasury() { try { S.tre = await api('treasury'); } catch (e) { S.tre = { error: e.message }; } renderVaults(); if (S.tre && S.tre.live) loadActivity(); }
   function renderVaults() { const el = $('#vaults'); if (!el || !M().length) return; const t = S.tre, live = t && t.live, tot = live ? t.basketUsd || 0 : 0;
     el.innerHTML = M().map((m, i) => { const h = live ? (t.holdings || []).find(x => x.symbol === m.symbol) : null, share = h && tot ? h.usd / tot * 100 : 0, f = Math.min(100, share / 25 * 100);
-      return `<div class="vault" style="--c:${SEG[i]}"><div class="vt"><b>${esc(m.symbol)}</b><span>${live ? share.toFixed(1) + '% of 25%' : 'target 25%'}</span></div><div class="jar${f > 0 ? ' full' : ''}"><i style="--f:${f.toFixed(1)}%"></i>${f > 0 ? '' : `<em>${t && t.error ? 'offline' : 'empty'}</em>`}</div><div class="vn"><span>${esc(NAMES[m.symbol])}</span><b>${h ? usd(h.usd, 2) : '$0.00'}</b></div></div>`; }).join('');
+      return `<div class="vault" style="--c:${SEG[i]};--f:${f.toFixed(1)}"><div class="vt">${badge(m.symbol, i)}<div><b>${esc(NAMES[m.symbol])}</b><small>${esc(m.ticker)}</small></div></div><div class="vring"><span><b>${live ? share.toFixed(1) + '%' : '0%'}</b><small>${t && t.error ? 'offline' : 'of 25%'}</small></span></div><div class="vn"><span>held</span><b>${h ? usd(h.usd, 2) : '$0.00'}</b></div></div>`; }).join('');
     setT('#held', live ? usd(tot, 2) : '$0.00'); setT('#unclaimed', live ? (+t.unclaimedSol).toFixed(3) + ' SOL' : '0 SOL');
     $('#treWallet').innerHTML = live && t.wallet ? `treasury <a href="https://solscan.io/account/${t.wallet}" target="_blank" rel="noopener" style="color:var(--s1)">${short(t.wallet)} ↗</a>` : ''; }
   async function loadActivity() { try { const a = await api('activity'); if (!a.items || !a.items.length) return; $('#activity').innerHTML = a.items.map(x => `<a class="row" href="https://solscan.io/tx/${x.sig}" target="_blank" rel="noopener"><span class="nmx">${esc(x.kind)}<i>${new Date(x.time * 1000).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</i></span><span>${short(x.sig)}</span><span><i>solscan</i></span><span class="ar">↗</span></a>`).join(''); } catch (e) { } }
@@ -418,7 +452,7 @@
 
   // ---------------------------------------------------------------- the end: the other side, rising
   const OU = { p: [] };
-  function outroFrame() { requestAnimationFrame(outroFrame); requestAnimationFrame(winFrame); requestAnimationFrame(ringFrame); requestAnimationFrame(wv3Frame); if (!vis.outro || document.hidden || RM) return; const c = $('#outroCv'), [g, W, H] = fit(c);
+  function outroFrame() { if (!$('#outroCv')) return; requestAnimationFrame(outroFrame); requestAnimationFrame(winFrame); requestAnimationFrame(donutFrame); requestAnimationFrame(wv3Frame); if (!vis.outro || document.hidden || RM) return; const c = $('#outroCv'), [g, W, H] = fit(c);
     if (OU.p.length < (W < 700 ? 40 : 90) && Math.random() < .5) { const up = Math.random() < .82; OU.p.push({ x: Math.random() * W, y: up ? H + 10 : -20, v: up ? -(.5 + Math.random() * 1.3) : 1.5 + Math.random() * 2, s: 6 + Math.floor(Math.random() * 3) * 3, up, c: up ? SEG[Math.floor(Math.random() * 4)] : DN }); }
     g.clearRect(0, 0, W, H); g.globalAlpha = .35; OU.p = OU.p.filter(p => { p.y += p.v; if (p.y < -30 || p.y > H + 30) return false; arrow(g, p.x, p.y, p.s, p.c, p.up); return true; }); g.globalAlpha = 1; }
 
@@ -449,11 +483,11 @@
     const h = document.documentElement.scrollHeight - innerHeight; $('#prog').style.transform = `scaleX(${h > 0 ? clamp(scrollY / h) : 0})`; }
 
   function start() {
-    drawMarks(); $$('canvas.float').forEach(c => { drawArt(c, c.dataset.art, 96); c.style.width = c.style.height = ''; }); watch($('#win'), 'win'); marqInit(); dialDrag(); stageInit(); chartInit(); pushInit(); ringInit(); simInit(); watch($('#wv3'), 'wv3'); reveals(); clock(); setInterval(clock, 20000);
+    drawMarks(); bgInit(); heroParallax(); tiltInit(); watch($('#win'), 'win'); marqInit(); dialDrag(); stageInit(); chartInit(); pushInit(); ringInit(); simInit(); watch($('#wv3'), 'wv3'); reveals(); clock(); setInterval(clock, 20000);
     watch($('#pipe'), 'pipe'); watch($('.outro'), 'outro');
     const snd = $('#snd'), sndUi = () => snd.classList.toggle('on', !!(window.MINTSOUND && MINTSOUND.on)); snd.onclick = e => { e.stopPropagation(); window.MINTSOUND && MINTSOUND.toggle(); }; document.addEventListener('mintsound', sndUi); sndUi();
     addEventListener('scroll', onScroll, { passive: true }); onScroll(); addEventListener('resize', () => { drawMarks(); CH.t0 = 0; CH.w = 0; EQ.w = 0; PP.nodes = null; renderDetail(false); });
-    requestAnimationFrame(stageFrame); requestAnimationFrame(marqFrame); requestAnimationFrame(cdFrame); requestAnimationFrame(chartFrame); requestAnimationFrame(eqFrame); requestAnimationFrame(pipeFrame); requestAnimationFrame(outroFrame); requestAnimationFrame(winFrame); requestAnimationFrame(ringFrame); requestAnimationFrame(wv3Frame);
+    requestAnimationFrame(stageFrame); requestAnimationFrame(marqFrame); requestAnimationFrame(cdFrame); requestAnimationFrame(chartFrame); requestAnimationFrame(eqFrame); requestAnimationFrame(pipeFrame); requestAnimationFrame(outroFrame); requestAnimationFrame(winFrame); requestAnimationFrame(donutFrame); requestAnimationFrame(wv3Frame);
     loadCoin(); loadTreasury(); setInterval(loadBasket, 45000); setInterval(() => { loadCoin(); loadTreasury(); }, 60000);
   }
   const fonts = Promise.all([document.fonts.load('700 100px ID'), document.fonts.load('700 30px PX'), document.fonts.load('600 14px JB'), document.fonts.load('500 16px IN')]).catch(() => { });

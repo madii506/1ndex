@@ -44,10 +44,10 @@ async function prices(mints) {
 }
 async function basket() {
   const SOL = 'So11111111111111111111111111111111111111112';
-  const P = await prices([...CFG.members.map(m => m.mint), CFG.benchmark.mint, SOL]);
+  const ST = CFG.stocks || [], P = await prices([...new Set([...CFG.members.map(m => m.mint), CFG.benchmark.mint, SOL, ...ST.map(s => s.mint)])]);
   const w = 1 / CFG.members.length, members = CFG.members.map(m => ({ ...m, weight: w, price: P[m.mint] || null }));
   const ch = members.map(m => m.symbol === 'USD' ? 0 : m.price && m.price.ch24); const ch24 = ch.every(x => x != null) ? ch.reduce((a, x) => a + w * x, 0) : null;
-  return { at: Date.now(), rule: CFG.rule, ch24, members, benchmark: { ...CFG.benchmark, price: P[CFG.benchmark.mint] || null }, sol: P[SOL] || null };
+  return { at: Date.now(), rule: CFG.rule, ch24, members, benchmark: { ...CFG.benchmark, price: P[CFG.benchmark.mint] || null }, sol: P[SOL] || null, stocks: ST.map(s => ({ ...s, price: P[s.mint] || null })) };
 }
 
 // ---------------------------------------------------------------- the coin and its treasury (pinned once $1NDEX exists)

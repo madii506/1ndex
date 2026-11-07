@@ -5,11 +5,121 @@
   "mint": null,
   "treasury": null,
   "rule": "four things that tend to hold up or rise when stocks fall, a quarter each, rebalanced every Monday",
-  "benchmark": { "symbol": "SPYx", "name": "the S&P 500 (SPYx)", "mint": "XsoCS1TfEyfFhfvj8EtZ528L3CaKBDBRqRapnBbDF2W" },
+  "benchmark": {
+    "symbol": "SPYx",
+    "name": "the S&P 500 (SPYx)",
+    "mint": "XsoCS1TfEyfFhfvj8EtZ528L3CaKBDBRqRapnBbDF2W"
+  },
   "members": [
-    { "symbol": "GOLD", "ticker": "GLDx", "name": "Gold xStock", "mint": "Xsv9hRk1z5ystj9MhnA7Lq4vjSsLwzL2nxrwmwtD3re", "decimals": 8, "kind": "gold", "note": "tracks the SPDR Gold Shares ETF. gold doesn't follow stocks." },
-    { "symbol": "SQQQ", "ticker": "SQQQ", "name": "ProShares UltraPro Short QQQ", "mint": "SQQQAa3gUxgnqcEsdjPA4RQNQBgB97TnG2hJhk2WaGE", "decimals": 6, "kind": "short", "note": "aims for 3x the opposite of the Nasdaq-100, each day. rises when tech falls." },
-    { "symbol": "VIX", "ticker": "UVXY", "name": "ProShares Ultra VIX Short-Term Futures", "mint": "UVXY4ojmAMTaPwUmrRmcuxWHjMHCbz3BxX2RBMzjYKx", "decimals": 6, "kind": "vol", "note": "follows the market's fear gauge. it spikes when stocks crash." },
-    { "symbol": "USD", "ticker": "USDC", "name": "USD Coin", "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", "decimals": 6, "kind": "cash", "note": "a dollar. it doesn't fall when stocks fall." }
+    {
+      "symbol": "GOLD",
+      "ticker": "GLDx",
+      "name": "Gold xStock",
+      "mint": "Xsv9hRk1z5ystj9MhnA7Lq4vjSsLwzL2nxrwmwtD3re",
+      "decimals": 8,
+      "kind": "gold",
+      "note": "tracks the SPDR Gold Shares ETF. gold doesn't follow stocks."
+    },
+    {
+      "symbol": "SQQQ",
+      "ticker": "SQQQ",
+      "name": "ProShares UltraPro Short QQQ",
+      "mint": "SQQQAa3gUxgnqcEsdjPA4RQNQBgB97TnG2hJhk2WaGE",
+      "decimals": 6,
+      "kind": "short",
+      "note": "aims for 3x the opposite of the Nasdaq-100, each day. rises when tech falls."
+    },
+    {
+      "symbol": "VIX",
+      "ticker": "UVXY",
+      "name": "ProShares Ultra VIX Short-Term Futures",
+      "mint": "UVXY4ojmAMTaPwUmrRmcuxWHjMHCbz3BxX2RBMzjYKx",
+      "decimals": 6,
+      "kind": "vol",
+      "note": "follows the market's fear gauge. it spikes when stocks crash."
+    },
+    {
+      "symbol": "USD",
+      "ticker": "USDC",
+      "name": "USD Coin",
+      "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+      "decimals": 6,
+      "kind": "cash",
+      "note": "a dollar. it doesn't fall when stocks fall."
+    }
+  ],
+  "stocks": [
+    {
+      "symbol": "SPY",
+      "ticker": "SPYx",
+      "name": "S&P 500",
+      "mint": "XsoCS1TfEyfFhfvj8EtZ528L3CaKBDBRqRapnBbDF2W"
+    },
+    {
+      "symbol": "QQQ",
+      "ticker": "QQQx",
+      "name": "Nasdaq-100",
+      "mint": "Xs8S1uUs1zvS2p7iwtsG3b6fkhpvmwz4GYU3gWAmWHZ"
+    },
+    {
+      "symbol": "NVDA",
+      "ticker": "NVDAx",
+      "name": "Nvidia",
+      "mint": "Xsc9qvGR1efVDFGLrVsmkzv3qi45LTBjeUKSPmx9qEh"
+    },
+    {
+      "symbol": "TSLA",
+      "ticker": "TSLAx",
+      "name": "Tesla",
+      "mint": "XsDoVfqeBukxuZHWhdvWHBhgEHjGNst4MLodqsJHzoB"
+    },
+    {
+      "symbol": "AAPL",
+      "ticker": "AAPLx",
+      "name": "Apple",
+      "mint": "XsbEhLAtcf6HdfpFZ5xEMdqW8nfAvcsP5bdudRLJzJp"
+    },
+    {
+      "symbol": "MSFT",
+      "ticker": "MSFTx",
+      "name": "Microsoft",
+      "mint": "XspzcW1PRtgf6Wj92HCiZdjzKCyFekVD8P5Ueh3dRMX"
+    },
+    {
+      "symbol": "GOOGL",
+      "ticker": "GOOGLx",
+      "name": "Alphabet",
+      "mint": "XsCPL9dNWBMvFtTmwcCA5v3xWPSMEBCszbQdiLLq6aN"
+    },
+    {
+      "symbol": "META",
+      "ticker": "METAx",
+      "name": "Meta",
+      "mint": "Xsa62P5mvPszXL1krVUnU5ar38bBSVcWAB6fmPCo5Zu"
+    },
+    {
+      "symbol": "AMZN",
+      "ticker": "AMZNx",
+      "name": "Amazon",
+      "mint": "Xs3eBt7uRfJX8QUs4suhyU8p2M6DoUDrJyWBa8LLZsg"
+    },
+    {
+      "symbol": "MSTR",
+      "ticker": "MSTRx",
+      "name": "Strategy",
+      "mint": "XsP7xzNPvEHS1m6qfanPUGjNmdnmsLKEoNAnHjdxxyZ"
+    },
+    {
+      "symbol": "COIN",
+      "ticker": "COINx",
+      "name": "Coinbase",
+      "mint": "Xs7ZdzSHLU9ftNJsii5fCeJhoRWSC32SQGzGQtePxNu"
+    },
+    {
+      "symbol": "CRCL",
+      "ticker": "CRCLx",
+      "name": "Circle",
+      "mint": "XsueG8BtpquVJX9LVLLEGuViXUungE6WmK5YZ3p3bd1"
+    }
   ]
 }

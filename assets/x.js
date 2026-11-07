@@ -59,13 +59,13 @@
     const rain = Array.from({ length: mob ? 46 : 96 }, () => ({ x: r() * W, y: -r() * H, s: 7 + Math.floor(r() * 3) * 4, v: 4 + r() * 6 }));
     const rise = Array.from({ length: mob ? 30 : 64 }, () => ({ x: r() * W, y: H + r() * H * .5, s: 6 + Math.floor(r() * 3) * 3, v: 2 + r() * 3, c: SEG[Math.floor(r() * 4)] }));
     const cs = Math.max(6, Math.round(Math.min(W, H) / 64)), colW = cs * (mob ? 4 : 5), colX = k => W * (.2 + k * .2) - colW / 2, colH = H * .4, colB = H * .93;
-    const T1 = 120, T_HIT = 640, T1_OUT = 1700, T2 = 1900, T2_OUT = 3250, T_SLICE = 3300, T_ONE = 4200, T_NAME = 4400, T_GO = 5250;
+    const T1 = 100, T_HIT = 720, T1_OUT = 1600, T2 = 1750, T2_OUT = 3000, T_SLICE = 3050, T_ONE = 3950, T_NAME = 4150, T_GO = 5000;
     let t0 = performance.now(), handoff = null, finished = false; const said = {}; const once = (k, n) => { if (!said[k]) { said[k] = 1; cue(n); } };
     const skip = () => { if (!handoff && performance.now() - t0 < 4900) t0 = performance.now() - 4900; }; addEventListener('pointerdown', skip, { once: true }); addEventListener('keydown', skip, { once: true });
     const word = (txt, x, y, fs, fill, a) => { if (a <= 0) return; g.globalAlpha = a; g.font = `700 ${fs}px ID`; g.textBaseline = 'middle'; g.textAlign = 'left'; g.fillStyle = SH2; g.fillText(txt, x + fs * .04, y + fs * .04); g.fillStyle = fill; g.fillText(txt, x, y); g.globalAlpha = 1; };
     function frame(now) {
       const t = now - t0; g.setTransform(DPR, 0, 0, DPR, 0, 0); g.clearRect(0, 0, W, H);
-      if (t > T_GO && !handoff) { const tl = $('#heroMark').getBoundingClientRect(); handoff = { t: now, x: tl.left, y: tl.top, s: (tl.width / 1.06) / L }; document.body.classList.add('handoff'); document.body.classList.remove('intro-on'); }
+      if (t > T_GO && !handoff) { const tl = ($('#heroMark') || $('.nav-brand canvas')).getBoundingClientRect(); handoff = { t: now, x: tl.left, y: tl.top, s: (tl.width / 1.06) / L }; document.body.classList.add('handoff'); document.body.classList.remove('intro-on'); }
       let bgA = 1, X0 = lx, Y0 = ly, sc = 1;
       if (handoff) { const k = clamp((now - handoff.t) / 1000), e = io(k); bgA = 1 - sm(clamp((k - .3) / .7)); X0 = lx + (handoff.x - lx) * e; Y0 = ly + (handoff.y - ly) * e; sc = 1 + (handoff.s - 1) * e; if (k >= 1 && !finished) { finished = true; end(); return done(); } }
       g.globalAlpha = bgA; g.fillStyle = NAVY; g.fillRect(0, 0, W, H);
@@ -76,19 +76,16 @@
         // beat 1: stocks fall.
         const a1 = 1 - sm(clamp((t - T1_OUT) / 420));
         if (a1 > 0) { g.globalAlpha = .75 * a1 * bgA; for (const d of rain) { d.y += d.v * (t > T_HIT ? 1.6 : 1); if (d.y > H + 20) d.y = -20; arrow(g, d.x, d.y, d.s, DN, false); } g.globalAlpha = 1;
-          g.font = `700 ${FS1}px ID`; const w1 = g.measureText('stocks ').width, w2 = g.measureText('fall.').width, x0 = (W - w1 - w2) / 2, ok = sm(clamp((t - T1_OUT) / 420)) * 70;
-          const k1 = out(clamp((t - T1) / 420)), k2 = clamp((t - T1 - 300) / 360), bounce = k2 < 1 ? (1 - out(k2)) : 0;
-          word('stocks', x0, H / 2 - (1 - k1) * 60 + ok, FS1, LAV, k1 * a1); word('fall.', x0 + w1, H / 2 - bounce * H * .35 + ok + (k2 >= 1 ? 0 : 0), FS1, DN, Math.min(1, k2 * 3) * a1);
-          if (t > T1 + 120) once('w1', 'tick'); if (t > T_HIT) once('hit', 'thud'); }
+          const ok = sm(clamp((t - T1_OUT) / 420)) * 80, NCd = 13, span = Math.min(W * .7, 980), cx0 = (W - span) / 2, cwd = span / NCd, bwd = Math.max(8, Math.floor(cwd * .62)), drop = H * .5 / NCd;
+          for (let i = 0; i < NCd; i++) { const ti = T1 + i * 48; if (t < ti) continue; const k = out(clamp((t - ti) / 200)), x = cx0 + i * cwd + (cwd - bwd) / 2, y0 = H * .22 + i * drop, hgt = drop * 1.7 * k;
+            g.globalAlpha = a1; g.fillStyle = 'rgba(0,0,0,.5)'; g.fillRect(x + 5, y0 + 5 + ok, bwd, hgt); g.fillStyle = DN; g.fillRect(x, y0 + ok, bwd, hgt); g.fillRect(x + bwd / 2 - 1.5, y0 - drop * .35 + ok, 3, hgt + drop * .7); g.globalAlpha = 1; if (i % 3 === 0) once('c' + i, 'tick'); }
+          if (t > T_HIT) once('hit', 'thud'); }
         // beat 2: the four rise.
         if (t > T2 - 100 && t < T_SLICE + 60) { const ac = 1 - clamp((t - T_SLICE) / 60);
           g.globalAlpha = .7 * ac; for (const d of rise) { d.y -= d.v; if (d.y < -20) d.y = H + 20; arrow(g, d.x, d.y, d.s, d.c, true); } g.globalAlpha = ac;
           for (let k = 0; k < 4; k++) { const kk = out(clamp((t - T2 - k * 110) / 800)), n = Math.floor(colH * kk / (cs + 3)), x = colX(k);
             for (let j = 0; j < n; j++) { const y = colB - (j + 1) * (cs + 3); g.fillStyle = SH; g.fillRect(x + 4, y + 4, colW, cs); g.fillStyle = SEG[k]; g.fillRect(x, y, colW, cs); } }
           g.globalAlpha = 1; once('w2', 'chime'); }
-        if (t > T2 && t < T2_OUT + 420) { const k = out(clamp((t - T2) / 520)), ko = sm(clamp((t - T2_OUT) / 400)), y = H * .3 + (1 - k) * 70 - ko * 50;
-          g.font = `700 ${FS2}px ID`; const w1 = g.measureText('the four ').width, w2 = g.measureText('rise.').width, x0 = (W - w1 - w2) / 2;
-          word('the four', x0, y, FS2, LAV, k * (1 - ko)); word('rise.', x0 + w1, y, FS2, grad(g, x0 + w1, 0, x0 + w1 + w2, 0), k * (1 - ko)); }
       }
       g.restore(); g.globalAlpha = 1;
       // beat 3: the columns burst into pixels that build the ring
@@ -103,7 +100,7 @@
           g.fillStyle = SH; for (const [x, y, s] of CELLS) if (s < 0) g.fillRect(ox + (x + 1) * pp, oy + (y + 1) * pp + dy, pp + .4, pp + .4);
           g.fillStyle = LAV; for (const [x, y, s] of CELLS) if (s < 0) g.fillRect(ox + x * pp, oy + y * pp + dy, pp + .4, pp + .4); g.globalAlpha = 1; if (k1 >= 1) once('one', 'tick'); }
         const fs = F * sc; g.font = `700 ${fs}px ID`; g.textBaseline = 'middle'; g.textAlign = 'left'; let wx = (handoff ? X0 : lx) + (L * 1.06 + gap) * sc; const wy = (handoff ? Y0 : ly) + size * .5 - fs * .04;
-        [...'1ndex'].forEach((ch, i) => { const k = handoff ? 1 : out(clamp((t - T_NAME - i * 70) / 460)), cw2 = g.measureText(ch).width; if (k > 0) { const dy = (1 - k) * fs * .3; g.globalAlpha = k; g.fillStyle = SH2; g.fillText(ch, wx + fs * .045, wy + dy + fs * .045); g.fillStyle = LAV; g.fillText(ch, wx, wy + dy); g.globalAlpha = 1; } wx += cw2; });
+        const nameA = handoff ? (document.getElementById('heroMark') ? 1 : 1 - clamp((now - handoff.t) / 380)) : 1; [...'1ndex'].forEach((ch, i) => { const k = (handoff ? 1 : out(clamp((t - T_NAME - i * 70) / 460))) * nameA, cw2 = g.measureText(ch).width; if (k > 0) { const dy = (1 - k) * fs * .3; g.globalAlpha = k; g.fillStyle = SH2; g.fillText(ch, wx + fs * .045, wy + dy + fs * .045); g.fillStyle = LAV; g.fillText(ch, wx, wy + dy); g.globalAlpha = 1; } wx += cw2; });
       }
       requestAnimationFrame(frame);
     }
@@ -112,16 +109,34 @@
 
   // ---------------------------------------------------------------- live prices
   async function loadBasket() { try { S.b = await api('basket'); onBasket(); } catch (e) { if (!S.b) { $('#tape').innerHTML = '<span>prices are busy right now, retrying</span>'; setT('#liveTxt', 'prices are busy, retrying…'); setT('#say', 'prices are busy right now. the seesaw moves as soon as they answer.'); } } }
-  function onBasket() { renderTape(); renderLive(); renderBoard(); renderPicker(); renderPools(); stageData(); renderVaults(); }
+  function onBasket() { renderTape(); renderLive(); renderWin(); renderBoard(); renderPicker(); renderPools(); stageData(); renderVaults(); }
   function renderTape() { if (!$('#tape')) return; const b = S.b, spy = b.benchmark && b.benchmark.price, items = [];
     if (spy) items.push(`S&amp;P 500 (SPYx) <em>${usd(spy.usd)}</em> <span class="${cls(spy.ch24)}">${pct(spy.ch24)}</span>`);
     M().forEach(m => { const p = m.price; if (p) items.push(`${esc(NAMES[m.symbol] || m.symbol)} (${esc(m.ticker)}) <em>${usd(p.usd)}</em> <span class="${cls(p.ch24)}">${pct(p.ch24)}</span>`); });
     if (b.ch24 != null) items.push(`the 1ndex four <span class="${cls(b.ch24)}">${pct(b.ch24)}</span>`); if (b.sol) items.push(`SOL <em>${usd(b.sol.usd)}</em>`);
     const one = items.map(x => `<span>${x}</span>`).join(''); $('#tape').innerHTML = one + one; }
   function renderLive() { const spy = S.b.benchmark && S.b.benchmark.price; if (!spy) return; const wl = $('#whyLive'); if (wl && S.b.sol) wl.innerHTML = `right now, over 24h: the S&amp;P 500 <span class="${cls(spy.ch24)}">${pct(spy.ch24)}</span> · SOL <span class="${cls(S.b.sol.ch24)}">${pct(S.b.sol.ch24)}</span>`; const red = spy.ch24 < 0, el = $('#live'); el.classList.toggle('red', red); el.classList.toggle('green', !red);
-    $('#liveTxt').innerHTML = `<b>live</b> · stocks ${red ? 'down' : 'up'} 24h`; }
+    $('#liveTxt').innerHTML = `<b>live</b> · stocks ${red ? 'down' : 'up'} 24h · launching on Raydium LaunchLab`; }
 
 
+
+  // ---------------------------------------------------------------- the live window under the headline: the four against the S&P, today and over 15 days
+  const HW = { t0: 0, w: 0 };
+  function renderWin() { const b = S.b; if (!b || !$('#win')) return; const spy = b.benchmark && b.benchmark.price, hf = $('#hwFour');
+    if (b.ch24 != null) { hf.textContent = spct(b.ch24); hf.className = 'wb-big ' + (b.ch24 >= 0 ? 'g' : 'dn'); }
+    if (spy) setT('#hwSpy', spct(spy.ch24), cls(spy.ch24));
+    const st = (b.stocks || []).filter(x => x.price && x.price.ch24 != null); if (st.length) setT('#hwDn', `${st.filter(x => x.price.ch24 < 0).length} of ${st.length}`);
+    const L = $('#hwList'); if (!L.querySelector('.hrow')) { L.innerHTML = M().map((m, i) => `<div class="hrow" style="--c:${SEG[i]}" data-k="${m.symbol}"><canvas></canvas><div><b>${esc(NAMES[m.symbol])}</b><small>${esc(m.ticker)} · a quarter</small></div><div class="r"><b class="p"></b><small class="c"></small></div><span class="w"><i></i></span></div>`).join(''); $$('#hwList canvas').forEach((c, i) => drawArt(c, ARTK[i], 44)); }
+    M().forEach(m => { const r = $(`.hrow[data-k="${m.symbol}"]`, L); if (!r) return; const p = m.price || {}; $('.p', r).textContent = usd(p.usd); const c = $('.c', r); c.textContent = pct(p.ch24); c.className = 'c ' + cls(p.ch24); }); }
+  function winFrame(now) { requestAnimationFrame(winFrame); const c = $('#hwChart'), H = S.hist; if (!c || !H || !vis.win || document.hidden) return;
+    if (!HW.t0) HW.t0 = now; const k = RM ? 1 : Math.min(1, (now - HW.t0) / 1800), [g, w, h] = fit(c); if (k >= 1 && HW.w === w) return; HW.w = k >= 1 ? w : 0;
+    g.clearRect(0, 0, w, h); const all = [...H.spy, ...H.ndx, 0], mn = Math.min(...all) - .6, mx = Math.max(...all) + .6, pr = 64, Y = v => 8 + (h - 16) * (1 - (v - mn) / (mx - mn)), X = i => i / (H.t.length - 1) * (w - pr), n = Math.max(2, Math.floor(k * H.t.length));
+    g.strokeStyle = 'rgba(232,236,255,.22)'; g.setLineDash([3, 5]); g.beginPath(); g.moveTo(0, Y(0)); g.lineTo(w - pr, Y(0)); g.stroke(); g.setLineDash([]);
+    g.globalAlpha = .12; g.fillStyle = grad(g, 0, 0, w, 0); g.beginPath(); for (let i = 0; i < n; i++) i ? g.lineTo(X(i), Y(H.ndx[i])) : g.moveTo(X(i), Y(H.ndx[i])); for (let i = n - 1; i >= 0; i--) g.lineTo(X(i), Y(H.spy[i])); g.closePath(); g.fill(); g.globalAlpha = 1;
+    const path = (a, ox, oy) => { g.beginPath(); for (let i = 0; i < n; i++) i ? g.lineTo(X(i) + ox, Y(a[i]) + oy) : g.moveTo(X(i) + ox, Y(a[i]) + oy); g.stroke(); };
+    g.lineJoin = 'round'; g.lineWidth = 2.5; g.strokeStyle = 'rgba(0,0,0,.5)'; path(H.spy, 3, 3); g.strokeStyle = DN; path(H.spy, 0, 0);
+    g.lineWidth = 3.5; g.strokeStyle = SH; path(H.ndx, 3, 3); g.strokeStyle = grad(g, 0, 0, w, 0); path(H.ndx, 0, 0);
+    if (k >= 1) { const Lx = H.t.length - 1; [[H.spy, DN], [H.ndx, SEG[0]]].forEach(([a, col]) => { g.fillStyle = col; g.fillRect(X(Lx) - 4, Y(a[Lx]) - 4, 8, 8); g.font = '700 12.5px IN, JB'; g.textAlign = 'left'; g.textBaseline = 'middle'; g.fillText(spct(a[Lx]), X(Lx) + 10, Y(a[Lx])); }); } }
   // ---------------------------------------------------------------- the stock market, live: real stocks on Solana (tokenized), red and green
   function renderBoard() { const el = $('#tiles'); if (!el || !S.b) return; const st = (S.b.stocks || []).filter(s => s.price && s.price.ch24 != null);
     if (!st.length) { el.innerHTML = '<div class="empty">stock prices are busy, retrying</div>'; return; }
@@ -144,7 +159,7 @@
     if (c.sim) say.innerHTML = `If the S&amp;P 500 moved ${spct(c.spy)} in a day, simple rules of thumb put the four near <b>${spct(c.four)}</b>. ${COARSE ? '' : 'It snaps back to live on its own.'}`;
     else say.innerHTML = c.spy < 0 ? (d >= 0 ? `Stocks are down over 24h. <b>The four are ${d.toFixed(2)} points ahead.</b>` : `Stocks are down over 24h, and the four are ${(-d).toFixed(2)} points behind so far.`) : (d >= 0 ? `Stocks are up over 24h, and <b>the four are still ${d.toFixed(2)} points ahead.</b>` : `Stocks are up over 24h. <b>A hedge costs a little on days like this.</b>`); }
   function stageInit() {
-    const st = $('#stage'); watch(st, 'stage'); if (COARSE) setT('#grab', 'tap ↓');
+    const st = $('#stage'); if (!st) return; watch(st, 'stage'); if (COARSE) setT('#grab', 'tap ↓');
     st.addEventListener('pointerdown', e => { if (e.pointerType === 'touch') return; ST.anim = null; ST.drag = { y: e.clientY, s0: ST.sim ?? (ST.live ? ST.live.spy : 0) }; st.setPointerCapture(e.pointerId); st.classList.add('drag', 'used'); cue('tick'); });
     st.addEventListener('pointermove', e => { if (!ST.drag) return; ST.sim = clamp(Math.round(ST.drag.s0 - (e.clientY - ST.drag.y) / 13), -15, 5); const i = ST.sim; if (i !== ST.lastInt) { ST.lastInt = i; cue('tick'); } stageLabels(); });
     const up = () => { if (!ST.drag) return; ST.drag = null; st.classList.remove('drag'); setTimeout(() => { if (!ST.drag) { ST.sim = null; stageLabels(); cue('pop'); } }, 650); };
@@ -153,7 +168,7 @@
     st.addEventListener('click', e => { if (!COARSE || ST.anim) return; st.classList.add('used'); ST.anim = { t: performance.now() }; cue('thud'); });
   }
   function stageFrame(now) {
-    requestAnimationFrame(stageFrame); if (!vis.stage || document.hidden) return;
+    if (!$('#stageCv')) return; requestAnimationFrame(stageFrame); if (!vis.stage || document.hidden) return;
     const c = $('#stageCv'), [g, W, H] = fit(c), mob = W < 700;
     if (ST.anim) { const k = (now - ST.anim.t) / 1000; if (k < .9) ST.sim = -10 * out(k / .9); else if (k < 3.4) ST.sim = -10; else { ST.anim = null; ST.sim = null; cue('pop'); } stageLabels(); if (k < .3) ST.shake = 6; }
     const cv = cur(), d = cv ? cv.four - cv.spy : 0;
@@ -219,8 +234,8 @@
     S.hist = { t: ts, spy, ndx, ser }; onHist(); }
   function histFail() { setT('#cdWhen', 'GeckoTerminal is busy');  setT('#vsSay', "GeckoTerminal didn't answer, so the 15-day chart is offline for now."); setT('#lvl', 'offline'); }
   function onHist() { const H = S.hist, L = a => a[a.length - 1], s15 = L(H.spy), n15 = L(H.ndx);
-    setT('#lvl', (1000 * (1 + n15 / 100)).toFixed(1));
-    $('#vsSay').innerHTML = `15 days: stocks <span class="${cls(s15)}">${spct(s15)}</span>, the four <span class="${n15 >= 0 ? 'g' : 'dn'}">${spct(n15)}</span>.`;
+    setT('#lvl', (1000 * (1 + n15 / 100)).toFixed(1)); setT('#hwLvl', 'index level ' + (1000 * (1 + n15 / 100)).toFixed(1)); HW.t0 = 0; HW.w = 0;
+    if ($('#vsSay')) $('#vsSay').innerHTML = `15 days: stocks <span class="${cls(s15)}">${spct(s15)}</span>, the four <span class="${n15 >= 0 ? 'g' : 'dn'}">${spct(n15)}</span>.`;
     void `$100 in the four 15 days ago would be about <span class="${cls(n15)}">${usd(100 * (1 + n15 / 100), 2)}</span> now; the same $100 in the S&amp;P 500, <span class="${cls(s15)}">${usd(100 * (1 + s15 / 100), 2)}</span>. Before fees, past moves only.`;
     renderDetail(false); CH.t0 = 0;
     // the worst 4 hours for the S&P in the window, and what each part did in those same 4 hours
@@ -317,7 +332,7 @@
       for (const [x, y, s] of CELLS) if (s === k) g.fillRect(x0 + x * p + dx + sh, y0 + y * p + dy + sh, p + .4, p + .4); }
     g.globalAlpha = 1; }
   const CH = { t0: 0, hover: -1 };
-  function chartFrame(now) { requestAnimationFrame(chartFrame); const c = $('#chart'), H = S.hist; if (!c || !H || !vis.chart || document.hidden) return;
+  function chartFrame(now) { if (!$('#chart')) return; requestAnimationFrame(chartFrame); const c = $('#chart'), H = S.hist; if (!c || !H || !vis.chart || document.hidden) return;
     if (!CH.t0) CH.t0 = now; const k = RM ? 1 : Math.min(1, (now - CH.t0) / 1800), [g, w, h] = fit(c);
     if (k >= 1 && CH.drawn === CH.hover && CH.w === w) return; CH.drawn = k >= 1 ? CH.hover : null; CH.w = w;
     g.clearRect(0, 0, w, h); const pl = 54, pr = 20, pt = 22, pb = 34, iw = w - pl - pr, ih = h - pt - pb;
@@ -333,7 +348,7 @@
     if (k >= 1) { const Lx = H.t.length - 1; [['spy', DN], ['ndx', SEG[0]]].forEach(([key, col]) => { const v = H[key][Lx]; g.fillStyle = col; g.fillRect(X(Lx) - 5, Y(v) - 5, 10, 10); g.font = '700 13px JB'; g.textAlign = 'right'; g.textBaseline = 'bottom'; g.fillText(spct(v), X(Lx) - 10, Y(v) - 8); }); }
     const tip = $('#tip'); if (k >= 1 && CH.hover >= 0) { const i = CH.hover; g.strokeStyle = 'rgba(232,236,255,.35)'; g.beginPath(); g.moveTo(X(i), pt); g.lineTo(X(i), pt + ih); g.stroke(); tip.hidden = false;
       tip.innerHTML = `<b>${new Date(H.t[i] * 1000).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</b><span class="s">S&amp;P ${spct(H.spy[i])}</span><span class="n">the four ${spct(H.ndx[i])}</span>`; tip.style.left = Math.min(w - 180, Math.max(8, X(i) + 14)) + 'px'; } else tip.hidden = true; }
-  function chartInit() { const c = $('#chart'); watch(c, 'chart'); c.addEventListener('pointermove', e => { if (!S.hist) return; const b = c.getBoundingClientRect(); CH.hover = clamp(Math.round((e.clientX - b.left - 54) / (b.width - 74) * (S.hist.t.length - 1)), 0, S.hist.t.length - 1); }); c.addEventListener('pointerleave', () => CH.hover = -1); }
+  function chartInit() { const c = $('#chart'); if (!c) return; watch(c, 'chart'); c.addEventListener('pointermove', e => { if (!S.hist) return; const b = c.getBoundingClientRect(); CH.hover = clamp(Math.round((e.clientX - b.left - 54) / (b.width - 74) * (S.hist.t.length - 1)), 0, S.hist.t.length - 1); }); c.addEventListener('pointerleave', () => CH.hover = -1); }
 
   // ---------------------------------------------------------------- push the market: a dial and four columns
   const EQ = { cur: [25, 25, 25, 25], tgt: [25, 25, 25, 25] };
@@ -346,8 +361,8 @@
     $$('#presets button').forEach(b => b.classList.toggle('on', +b.dataset.v === s));
     const lab = $('#eqLab'); if (!lab.children.length) lab.innerHTML = ['gold', 'the short Nasdaq', 'VIX', 'dollars'].map((n, i) => `<div style="--c:${SEG[i]}"><b>${n}</b><span></span></div>`).join('');
     $$('#eqLab span').forEach((el, i) => { const d = v[i] - 25; el.innerHTML = `$25 → ${usd(v[i], 2)}${Math.abs(d) > .005 ? ` <em class="${cls(d)}" style="font-style:normal">${d > 0 ? '+' : '−'}${usd(Math.abs(d), 2)}</em>` : ''}`; }); }
-  function pushInit() { const t = $('#touch'); t.addEventListener('input', () => { cue('tick'); renderPush(); }); $$('#presets button').forEach(b => b.addEventListener('click', () => { t.value = b.dataset.v; cue('pop'); renderPush(); })); watch($('#eqCv'), 'eq'); renderPush(); }
-  function eqFrame() { requestAnimationFrame(eqFrame); if (!vis.eq || document.hidden) return; const c = $('#eqCv'), [g, W, H] = fit(c);
+  function pushInit() { const t = $('#touch'); if (!t) return; t.addEventListener('input', () => { cue('tick'); renderPush(); }); $$('#presets button').forEach(b => b.addEventListener('click', () => { t.value = b.dataset.v; cue('pop'); renderPush(); })); watch($('#eqCv'), 'eq'); renderPush(); }
+  function eqFrame() { if (!$('#eqCv')) return; requestAnimationFrame(eqFrame); if (!vis.eq || document.hidden) return; const c = $('#eqCv'), [g, W, H] = fit(c);
     let moving = false; EQ.cur = EQ.cur.map((v, i) => { const n = RM ? EQ.tgt[i] : v + (EQ.tgt[i] - v) * .14; if (Math.abs(n - EQ.tgt[i]) > .01) moving = true; return n; });
     if (!moving && EQ.drawn === EQ.tgt.join() && EQ.w === W) return; EQ.drawn = moving ? null : EQ.tgt.join(); EQ.w = W;
     g.clearRect(0, 0, W, H); const top = 34, bot = H - 6, maxV = Math.max(52, ...EQ.cur) * 1.04, Y = v => bot - v / maxV * (bot - top), cw = W / 4, bw = Math.min(120, cw * .66), cell = 10, gp = 3;
@@ -403,7 +418,7 @@
 
   // ---------------------------------------------------------------- the end: the other side, rising
   const OU = { p: [] };
-  function outroFrame() { requestAnimationFrame(outroFrame); requestAnimationFrame(ringFrame); requestAnimationFrame(wv3Frame); if (!vis.outro || document.hidden || RM) return; const c = $('#outroCv'), [g, W, H] = fit(c);
+  function outroFrame() { requestAnimationFrame(outroFrame); requestAnimationFrame(winFrame); requestAnimationFrame(ringFrame); requestAnimationFrame(wv3Frame); if (!vis.outro || document.hidden || RM) return; const c = $('#outroCv'), [g, W, H] = fit(c);
     if (OU.p.length < (W < 700 ? 40 : 90) && Math.random() < .5) { const up = Math.random() < .82; OU.p.push({ x: Math.random() * W, y: up ? H + 10 : -20, v: up ? -(.5 + Math.random() * 1.3) : 1.5 + Math.random() * 2, s: 6 + Math.floor(Math.random() * 3) * 3, up, c: up ? SEG[Math.floor(Math.random() * 4)] : DN }); }
     g.clearRect(0, 0, W, H); g.globalAlpha = .35; OU.p = OU.p.filter(p => { p.y += p.v; if (p.y < -30 || p.y > H + 30) return false; arrow(g, p.x, p.y, p.s, p.c, p.up); return true; }); g.globalAlpha = 1; }
 
@@ -424,7 +439,7 @@
   function simLabels() { const v = PP.amt; const e = id => $('#' + id); if (!e('pe0')) return; e('pe0').textContent = fsol(v) + ' SOL'; e('pe1').textContent = fsol(v * .01) + ' SOL'; e('pe2').textContent = fsol(v * .01) + ' SOL to spend'; for (let i = 0; i < 4; i++) { const o = e('peo' + i); if (o) o.textContent = '≈' + fsol(v * .0025) + ' SOL'; } }
   function simInit() { PP.amt = 1; $$('#sim button').forEach(b => b.addEventListener('click', () => { PP.amt = +b.dataset.v; $$('#sim button').forEach(x => x.classList.toggle('on', x === b)); simLabels(); cue('pop'); PP.burst = Math.min(24, 4 + Math.round(Math.log2(PP.amt * 4) * 3)); })); }
   // the big number on the crash test is a handle too: drag it up or down
-  function dialDrag() { const mv = $('#mv'), t = $('#touch'); if (!mv) return; mv.style.cursor = 'ns-resize'; mv.style.touchAction = 'none'; let d = null;
+  function dialDrag() { const mv = $('#mv'), t = $('#touch'); if (!mv || !t) return; mv.style.cursor = 'ns-resize'; mv.style.touchAction = 'none'; let d = null;
     mv.addEventListener('pointerdown', e => { d = { y: e.clientY, v: +t.value }; mv.setPointerCapture(e.pointerId); });
     mv.addEventListener('pointermove', e => { if (!d) return; const v = clamp(Math.round(d.v - (e.clientY - d.y) / 12), -15, 5); if (v !== +t.value) { t.value = v; cue('tick'); renderPush(); } });
     const up = () => d = null; mv.addEventListener('pointerup', up); mv.addEventListener('pointercancel', up); }
@@ -434,11 +449,11 @@
     const h = document.documentElement.scrollHeight - innerHeight; $('#prog').style.transform = `scaleX(${h > 0 ? clamp(scrollY / h) : 0})`; }
 
   function start() {
-    drawMarks(); marqInit(); dialDrag(); stageInit(); chartInit(); pushInit(); ringInit(); simInit(); watch($('#wv3'), 'wv3'); reveals(); clock(); setInterval(clock, 20000);
+    drawMarks(); $$('canvas.float').forEach(c => { drawArt(c, c.dataset.art, 96); c.style.width = c.style.height = ''; }); watch($('#win'), 'win'); marqInit(); dialDrag(); stageInit(); chartInit(); pushInit(); ringInit(); simInit(); watch($('#wv3'), 'wv3'); reveals(); clock(); setInterval(clock, 20000);
     watch($('#pipe'), 'pipe'); watch($('.outro'), 'outro');
     const snd = $('#snd'), sndUi = () => snd.classList.toggle('on', !!(window.MINTSOUND && MINTSOUND.on)); snd.onclick = e => { e.stopPropagation(); window.MINTSOUND && MINTSOUND.toggle(); }; document.addEventListener('mintsound', sndUi); sndUi();
     addEventListener('scroll', onScroll, { passive: true }); onScroll(); addEventListener('resize', () => { drawMarks(); CH.t0 = 0; CH.w = 0; EQ.w = 0; PP.nodes = null; renderDetail(false); });
-    requestAnimationFrame(stageFrame); requestAnimationFrame(marqFrame); requestAnimationFrame(cdFrame); requestAnimationFrame(chartFrame); requestAnimationFrame(eqFrame); requestAnimationFrame(pipeFrame); requestAnimationFrame(outroFrame); requestAnimationFrame(ringFrame); requestAnimationFrame(wv3Frame);
+    requestAnimationFrame(stageFrame); requestAnimationFrame(marqFrame); requestAnimationFrame(cdFrame); requestAnimationFrame(chartFrame); requestAnimationFrame(eqFrame); requestAnimationFrame(pipeFrame); requestAnimationFrame(outroFrame); requestAnimationFrame(winFrame); requestAnimationFrame(ringFrame); requestAnimationFrame(wv3Frame);
     loadCoin(); loadTreasury(); setInterval(loadBasket, 45000); setInterval(() => { loadCoin(); loadTreasury(); }, 60000);
   }
   const fonts = Promise.all([document.fonts.load('700 100px ID'), document.fonts.load('700 30px PX'), document.fonts.load('600 14px JB'), document.fonts.load('500 16px IN')]).catch(() => { });

@@ -18,7 +18,7 @@
 <link rel="apple-touch-icon" href="/icon.png?v=1">
 <link rel="preload" href="/assets/fonts/interd-700.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/assets/fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/assets/x.css?v=6">
+<link rel="stylesheet" href="/assets/x.css?v=7">
 </head>
 <body class="intro-on">
 <canvas id="bg" aria-hidden="true"></canvas>
@@ -43,18 +43,25 @@
     <div class="cta"><a class="btn btn-go" href="#launch">Launch a coin →</a><a class="btn" href="#hedges">See the hedges</a></div>
   </div>
   <div class="wrap">
-    <div class="win rv" id="win">
-      <div class="win-bar"><span class="dots"><i></i><i></i><i></i></span><span class="win-url">1ndex · hedges, live</span><span class="win-live"><i></i>live</span></div>
+    <div class="wrv rv"><div class="wfloat">
+    <div class="win" id="win">
+      <div class="w2-top">
+        <div class="seg" id="w2Mix" aria-label="hedge mix"><i class="seg-pill"></i><button data-v="classic" class="on">The classic</button><button data-v="shield">Crash shield</button><button data-v="haven">Safe haven</button><button data-v="metal">Gold bug</button></div>
+        <div class="seg sm" id="w2Rng" aria-label="range"><i class="seg-pill"></i><button data-v="d1">24h</button><button data-v="d3">3d</button><button data-v="d7">7d</button><button data-v="all" class="on">15d</button></div>
+        <span class="win-live"><i></i>live</span>
+      </div>
       <div class="win-body">
         <div class="wb-main">
-          <small>the classic hedge · gold, short Nasdaq, VIX, dollars · 24h</small><b class="wb-big" id="hwFour">—</b>
-          <div class="wb-vs"><span>S&amp;P 500 <b id="hwSpy">—</b></span><span>stocks down <b id="hwDn">—</b></span><span>coins on 1ndex <b id="hwCoins">—</b></span></div>
-          <div class="wb-chart"><canvas id="hwChart" aria-label="15 days: the S&amp;P 500 against the classic hedge"></canvas></div>
-          <div class="wb-leg"><span class="lg spy">the S&amp;P 500</span><span class="lg ndx">the classic hedge</span><span>15 days</span></div>
+          <small class="w2-lbl" id="w2Lbl">the classic</small>
+          <b class="wb-big" id="hwFour">—</b>
+          <div class="wb-vs"><span>S&amp;P 500 <b id="hwSpy">—</b></span><span>vs stocks <b id="hwGap">—</b></span><span>stocks down today <b id="hwDn">—</b></span></div>
+          <div class="wb-chart" id="w2Box"><canvas id="w2Chart" aria-label="the S&amp;P 500 against the hedge mix"></canvas><div class="w2-tip" id="w2Tip" hidden></div><div class="w2-wait" id="w2Wait">reading 15 days of prices…</div></div>
+          <div class="wb-leg"><span class="lg spy">the S&amp;P 500</span><span class="lg ndx" id="w2LgMix">the classic</span><span class="lg ov" id="w2LgOv" hidden></span><span class="w2-hint">scrub the chart · hover a hedge</span></div>
         </div>
-        <div class="wb-side" id="hwList"><div class="empty">reading the market…</div></div>
+        <div class="wb-side"><div class="w2-list" id="hwList"><div class="empty">reading the market…</div></div></div>
       </div>
     </div>
+    </div></div>
   </div>
 </section>
 
@@ -64,7 +71,7 @@
   <div class="wrap">
     <div class="shc"><p class="kick"><i></i>how it works</p><h2 class="h2c rv">Three steps. One signature.</h2><p class="subc rv">From an idea to a live coin whose trading buys a hedge against the stock market, in under a minute.</p></div>
     <div class="how3">
-      <div class="hcard rv"><div class="hv hvp"><div class="pchips"><span class="on">The classic</span><span>Crash shield</span><span>Safe haven</span><span>Gold bug</span><span>Custom</span></div><div class="pbar"><i style="flex:25;background:var(--s1)"></i><i style="flex:25;background:var(--s2)"></i><i style="flex:25;background:var(--s3)"></i><i style="flex:25;background:var(--s4)"></i></div></div><span class="hn">01</span><h3>Pick a hedge</h3><p>Up to four of nine assets: three kinds of gold, silver, the short Nasdaq, VIX, dollars and euros. Or take a ready mix.</p></div>
+      <div class="hcard rv"><div class="hv hvp"><div class="pchips"><button data-p="classic" class="on">The classic</button><button data-p="shield">Crash shield</button><button data-p="haven">Safe haven</button><button data-p="metal">Gold bug</button><button data-p="custom">Custom</button></div><div class="pbar"><i style="flex:25;background:var(--s1)"></i><i style="flex:25;background:var(--s2)"></i><i style="flex:25;background:var(--s3)"></i><i style="flex:25;background:var(--s4)"></i></div><p class="pleg" id="howLeg">25% gold · 25% short Nasdaq · 25% VIX · 25% dollars</p></div><span class="hn">01</span><h3>Pick a hedge</h3><p>Up to four of nine assets: three kinds of gold, silver, the short Nasdaq, VIX, dollars and euros. Or take a ready mix.</p></div>
       <div class="hcard rv" style="--d:1"><div class="hv"><div class="coinmock"><img src="/coins/1.png" alt=""><div><b>Crash Shield</b><small>$SHIELD · on Raydium LaunchLab</small></div><em>sign once</em></div></div><span class="hn">02</span><h3>Launch your coin</h3><p>Name, ticker, image. One transaction creates it on the 1ndex launchpad on Raydium LaunchLab. Your hedge goes into its on-chain metadata.</p></div>
       <div class="hcard rv" style="--d:2"><div class="hv hv3" id="howBars"><div><i style="--c:var(--s1)"></i><span>gold</span></div><div><i style="--c:var(--s2)"></i><span>SQQQ</span></div><div><i style="--c:var(--s3)"></i><span>VIX</span></div><div><i style="--c:var(--s4)"></i><span>USD</span></div></div><span class="hn">03</span><h3>Every trade buys it</h3><p>1% of every trade goes to the hedge treasury, which buys that coin's hedge. Every buy is a public transaction.</p></div>
     </div>
@@ -105,14 +112,16 @@
 
 <section class="band" id="hedges">
   <div class="wrap">
-    <div class="shc"><p class="kick"><i></i>the hedges · live</p><h2 class="h2c rv">Nine ways to bet against a crash.</h2><p class="subc rv">Every asset trades on Solana and can be bought through Jupiter. Prices from Dexscreener, 15 days of history from GeckoTerminal.</p></div>
+    <div class="shc"><p class="kick"><i></i>the hedges · live</p><h2 class="h2c rv">Nine ways to bet against a crash.</h2><p class="subc rv">Every asset trades on Solana and can be bought through Jupiter. Tap ＋ on up to four to build your own hedge.</p></div>
     <div class="hgrid" id="hgrid"></div>
+    <div class="htray" id="htray" hidden><span class="ht-l">Your hedge</span><div class="ht-c" id="htChips"></div><button class="btn btn-go btn-sm" id="htGo">Launch with this →</button></div>
   </div>
 </section>
 
 <section class="band" id="stocks">
   <div class="wrap">
     <div class="shc"><p class="kick"><i></i>real stocks · live</p><h2 class="h2c rv">What you're hedging against.</h2><p class="subc rv">Twenty real stocks trading on Solana as tokens. Red when they fall.</p></div>
+    <div class="btool"><div class="seg sm" id="bsSort" aria-label="sort"><i class="seg-pill"></i><button data-v="dn" class="on">falling first</button><button data-v="up">rising first</button><button data-v="az">A–Z</button></div></div>
     <div class="board">
       <div class="bsum rv">
         <b id="bsN">—</b><span id="bsT">reading the market…</span>
@@ -159,6 +168,20 @@
 <span class="c">network</span>            Solana mainnet</pre>
           <div class="term-pills"><span>one signature</span><span>no creator fee</span><span>public treasury</span></div>
         </div>
+      </div>
+    </div>
+    <div class="calc rv" id="calc">
+      <div class="calc-l">
+        <p class="kick"><i></i>try it</p>
+        <h3 class="calc-h">If a coin trades <b id="cVol">100 SOL</b> on its curve</h3>
+        <input type="range" id="cRange" min="0" max="1000" value="541" aria-label="SOL traded on the curve">
+        <div class="calc-ticks"><span style="left:0">1</span><span style="left:27%">10</span><span style="left:54.1%">100</span><span style="left:81.1%">1K</span><span style="left:100%">5K</span></div>
+        <div class="seg sm" id="cMix" aria-label="hedge mix"></div>
+      </div>
+      <div class="calc-r">
+        <div class="cbig"><b id="cOut">1.00 SOL</b><span id="cUsd">buys its hedge</span></div>
+        <div class="cbars" id="cBars"></div>
+        <div class="cfoot"><span>LaunchLab <b id="cLL">0.25 SOL</b></span><span>creator <b>0</b></span><span>1ndex <b>0</b></span></div>
       </div>
     </div>
   </div>
@@ -216,6 +239,6 @@
 <div class="toast" id="toast" role="status"></div>
 <script src="/assets/art.js" defer></script>
 <script src="/assets/sound.js" defer></script>
-<script src="/assets/x.js?v=6" defer></script>
+<script src="/assets/x.js?v=7" defer></script>
 </body>
 </html>

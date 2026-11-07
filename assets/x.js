@@ -143,7 +143,7 @@
 
   // ---------------------------------------------------------------- live prices
   async function loadBasket() { try { S.b = await api('basket'); onBasket(); } catch (e) { if (!S.b) { $('#tape').innerHTML = '<span>prices are busy right now, retrying</span>'; setT('#liveTxt', 'prices are busy, retrying…'); setT('#say', 'prices are busy right now. the seesaw moves as soon as they answer.'); } } }
-  function onBasket() { renderTape2(); renderWin2(); renderFloats2(); renderBoard(); renderHedges(); renderPools2(); renderVaults2(); if (!LN.inited) { LN.inited = true; launchInit(); } else renderLaunchBtn(); }
+  function onBasket() { renderTape2(); renderWin2(); renderFloats2(); renderBoard(); renderHedges(); renderPools2(); renderVaults2(); if (!LN.inited) { LN.inited = true; launchInit(); } else renderLaunchBtn(); v7Init(); }
   function renderTape() { if (!$('#tape')) return; const b = S.b, spy = b.benchmark && b.benchmark.price, items = [];
     if (spy) items.push(`S&amp;P 500 (SPYx) <em>${usd(spy.usd)}</em> <span class="${cls(spy.ch24)}">${pct(spy.ch24)}</span>`);
     M().forEach(m => { const p = m.price; if (p) items.push(`${esc(NAMES[m.symbol] || m.symbol)} (${esc(m.ticker)}) <em>${usd(p.usd)}</em> <span class="${cls(p.ch24)}">${pct(p.ch24)}</span>`); });
@@ -172,11 +172,11 @@
     g.lineWidth = 3.5; g.strokeStyle = SH; path(H.ndx, 3, 3); g.strokeStyle = grad(g, 0, 0, w, 0); path(H.ndx, 0, 0);
     if (k >= 1) { const Lx = H.t.length - 1; [[H.spy, DN], [H.ndx, SEG[0]]].forEach(([a, col]) => { g.fillStyle = col; g.fillRect(X(Lx) - 4, Y(a[Lx]) - 4, 8, 8); g.font = '700 12.5px IN, JB'; g.textAlign = 'left'; g.textBaseline = 'middle'; g.fillText(spct(a[Lx]), X(Lx) + 10, Y(a[Lx])); }); } }
   // ---------------------------------------------------------------- the stock market, live: real stocks on Solana (tokenized), red and green
-  function renderBoard() { const el = $('#tiles'); if (!el || !S.b) return; const st = (S.b.stocks || []).filter(s => s.price && s.price.ch24 != null);
+  function renderBoard() { const el = $('#tiles'); if (!el || !S.b) return; const st = (S.b.stocks || []).filter(s => s.price && s.price.ch24 != null); const so = S.bsort || 'dn'; st.sort((a, c) => so === 'az' ? a.symbol.localeCompare(c.symbol) : so === 'up' ? c.price.ch24 - a.price.ch24 : a.price.ch24 - c.price.ch24);
     if (!st.length) { el.innerHTML = '<div class="empty">stock prices are busy, retrying</div>'; return; }
     const prev = S.prevSt || {};
-    el.innerHTML = st.map(s => { const c = s.price.ch24, a = clamp(Math.abs(c) / 2.2), fl = prev[s.symbol] != null && prev[s.symbol] !== s.price.usd ? ' flash' : '', tag = s.price.pool ? 'a' : 'div', href = s.price.pool ? ` href="https://dexscreener.com/solana/${s.price.pool}" target="_blank" rel="noopener"` : '';
-      return `<${tag} class="tile ${c < 0 ? 'dn' : 'up'}${fl}" style="--a:${a.toFixed(2)}"${href}><b>${esc(s.symbol)}</b><small>${esc(s.name)}</small><span class="px">${usd(s.price.usd)}</span><span class="ch">${spct(c)}</span></${tag}>`; }).join('');
+    el.innerHTML = st.map((s, i) => { const c = s.price.ch24, a = clamp(Math.abs(c) / 2.2), fl = prev[s.symbol] != null && prev[s.symbol] !== s.price.usd ? ' flash' : '', tag = s.price.pool ? 'a' : 'div', href = s.price.pool ? ` href="https://dexscreener.com/solana/${s.price.pool}" target="_blank" rel="noopener"` : '';
+      return `<${tag} class="tile ${c < 0 ? 'dn' : 'up'}${fl}" style="--a:${a.toFixed(2)};--i:${i}"${href}><b>${esc(s.symbol)}</b><small>${esc(s.name)}</small><span class="px">${usd(s.price.usd)}</span><span class="ch">${spct(c)}</span></${tag}>`; }).join('');
     S.prevSt = Object.fromEntries(st.map(s => [s.symbol, s.price.usd]));
     const dn = st.filter(s => s.price.ch24 < 0).length, avg = st.reduce((a, s) => a + s.price.ch24, 0) / st.length;
     setT('#bsN', `${dn}/${st.length}`, dn > st.length / 2 ? 'dn' : 'up'); setT('#bsT', dn > st.length / 2 ? 'stocks down over 24h' : dn ? 'stocks mostly up over 24h' : 'every stock here is up over 24h');
@@ -483,10 +483,7 @@
   const HG = () => (S.b && S.b.hedges) || [], HBY = c => HG().find(h => h.code === c);
   const hbadge = (c, cls2) => `<span class="mb${cls2 ? ' ' + cls2 : ''}" style="--c:${HCOL[c] || SEG[0]}">${HMONO[c] || c}</span>`;
   // the window under the headline: every hedge, live
-  function renderWin2() { const b = S.b; if (!b || !$('#win')) return; const spy = b.benchmark && b.benchmark.price, hf = $('#hwFour');
-    if (b.ch24 != null) { hf.textContent = spct(b.ch24); hf.className = 'wb-big ' + (b.ch24 >= 0 ? 'g' : 'dn'); } if (spy) setT('#hwSpy', spct(spy.ch24), cls(spy.ch24));
-    const st = (b.stocks || []).filter(x => x.price && x.price.ch24 != null); if (st.length) setT('#hwDn', `${st.filter(x => x.price.ch24 < 0).length} of ${st.length}`);
-    $('#hwList').innerHTML = HG().map(h => { const p = h.price || {}; return `<div class="hrow" style="--c:${HCOL[h.code]}">${hbadge(h.code)}<div><b>${esc(h.name)}</b><small>${esc(h.symbol)}</small></div><div class="r"><b>${usd(p.usd)}</b><small class="${cls(p.ch24)}">${pct(p.ch24)}</small></div></div>`; }).join(''); }
+  function renderWin2() { if (!$('#win')) return; w2List(); if (S.hist && !W2.to) w2Set(); else if (!W2.to) w2Head(null); }
   function renderFloats2() { $$('.fcard').forEach(el => { const h = HBY(el.dataset.k); if (!h) return; if (!el.dataset.on) { el.dataset.on = 1; el.innerHTML = `${hbadge(h.code)}<div><b>${esc(h.symbol)}</b><small>${esc(h.name)}</small></div><em></em><canvas></canvas>`; }
     const p = h.price || {}, em = $('em', el); em.textContent = pct(p.ch24); em.className = cls(p.ch24); if (S.hist && S.hist.ser[h.code]) smooth($('canvas', el), S.hist.ser[h.code], HCOL[h.code]); }); }
   function renderTape2() { const t = $('#tape'); if (!t || !S.b) return; const b = S.b, spy = b.benchmark && b.benchmark.price, items = [];
@@ -496,7 +493,7 @@
     const one = items.map(x => `<span>${x}</span>`).join(''); t.innerHTML = one + one; }
   // the nine hedges
   function renderHedges() { const g = $('#hgrid'); if (!g || !HG().length) return; const kind = { gold: 'gold', silver: 'silver', short: 'short the Nasdaq', vol: 'volatility', cash: 'cash' };
-    if (!g.dataset.on) { g.dataset.on = 1; g.innerHTML = HG().map((h, i) => `<div class="hc rv vis" style="--c:${HCOL[h.code]};--d:${i % 3}" data-k="${h.code}">${hbadge(h.code)}<div class="nm"><b>${esc(h.name)}</b><small>${esc(h.symbol)} · ${esc(h.full)}</small></div><div class="px"><b></b><small></small></div><canvas aria-label="15 days"></canvas><p>${esc(h.note)}</p><div class="kd"><span>${kind[h.kind] || h.kind}</span><span class="lq"></span></div></div>`).join(''); }
+    if (!g.dataset.on) { g.dataset.on = 1; g.innerHTML = HG().map((h, i) => `<div class="hc rv vis" style="--c:${HCOL[h.code]};--d:${i % 3}" data-k="${h.code}"><button class="hpick" data-c="${h.code}" aria-label="add ${esc(h.symbol)} to my hedge" aria-pressed="false">+</button>${hbadge(h.code)}<div class="nm"><b>${esc(h.name)}</b><small>${esc(h.symbol)} · ${esc(h.full)}</small></div><div class="px"><b></b><small></small></div><canvas aria-label="15 days"></canvas><p>${esc(h.note)}</p><div class="kd"><span>${kind[h.kind] || h.kind}</span><span class="lq"></span></div></div>`).join(''); hpRender(); }
     HG().forEach(h => { const el = $(`.hc[data-k="${h.code}"]`, g); if (!el) return; const p = h.price || {}; $('.px b', el).textContent = usd(p.usd); const c = $('.px small', el); c.textContent = pct(p.ch24) + ' 24h'; c.className = cls(p.ch24);
       $('.lq', el).textContent = p.liquidity ? big(p.liquidity) + ' liquidity' : ''; if (S.hist && S.hist.ser[h.code]) smooth($('canvas', el), S.hist.ser[h.code], HCOL[h.code]); }); }
   function renderVaults2() { const el = $('#vaults'); if (!el || !HG().length) return; const t = S.tre, live = t && t.live, tot = live ? t.basketUsd || 0 : 0;
@@ -512,7 +509,7 @@
     const ff = m => { let last = null; const seed = m.get([...m.keys()].sort((a, c) => a - c)[0]); return ts.map(t => { if (m.has(t)) last = m.get(t); return last ?? seed; }); };
     const ser = {}; for (const k of Object.keys(raw)) ser[k] = ff(raw[k]); ['U', 'T', 'E'].forEach(k => ser[k] = ts.map(() => 1));
     const rel = a => a.map(v => (v / a[0] - 1) * 100), spy = rel(ser.SPY), parts = ['G', 'Q', 'V'].map(k => ser[k] ? rel(ser[k]) : ts.map(() => 0)), ndx = ts.map((_, i) => .25 * (parts[0][i] + parts[1][i] + parts[2][i]));
-    S.hist = { t: ts, spy, ndx, ser }; HW.t0 = 0; HW.w = 0; renderFloats2(); renderHedges(); }
+    S.hist = { t: ts, spy, ndx, ser }; HW.t0 = 0; HW.w = 0; renderFloats2(); renderHedges(); w2Set(); }
 
   // ---------------------------------------------------------------- the wallet
   const WL = { pk: null, p: null, name: '' };
@@ -576,13 +573,128 @@
   function onScroll() { const links = $$('.nav-links a[href^="#"]'), y = innerHeight * .35; let on = -1; links.forEach((a, i) => { const s = $(a.getAttribute('href')); if (s && s.getBoundingClientRect().top < y) on = i; }); links.forEach((a, i) => a.classList.toggle('on', i === on));
     const h = document.documentElement.scrollHeight - innerHeight; $('#prog').style.transform = `scaleX(${h > 0 ? clamp(scrollY / h) : 0})`; }
 
+  // ---------------------------------------------------------------- v7: the live window you can play with, and sections that answer back
+  const W2 = { mix: 'classic', rng: 'all', hov: null, pin: null, idx: null, from: null, to: null, cur: null, t0: 0, dirty: true };
+  const RNG = { d1: [7, '24 hours'], d3: [19, '3 days'], d7: [43, '7 days'], all: [0, '15 days'] };
+  const PNAME = { classic: 'the classic', shield: 'crash shield', haven: 'safe haven', metal: 'gold bug' };
+  const CASH = /^[UTE]$/;
+  function mixW(id) { const p = ((S.b && S.b.presets) || []).find(x => x.id === id), o = {}; if (p) [...p.h.matchAll(/([A-Z])(\d+)/g)].forEach(m => o[m[1]] = +m[2]); return o; }
+  function ch24Mix(w) { let s = 0, n = 0; for (const [c, k] of Object.entries(w)) { const h = HBY(c), v = h && h.price ? h.price.ch24 : null; if (v == null || !isFinite(v)) continue; s += k * v; n += k; } return n ? s / n : null; }
+  const w2Date = (t, mode) => { const d = new Date(t * 1000), day = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), hr = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }); return mode === 'hr' ? hr : mode === 'full' ? day + ' · ' + hr : day; };
+  function segInit(el, fn) { if (!el || el._seg) return; el._seg = 1;
+    const place = () => { const b = $('button.on', el), p = $('.seg-pill', el); if (!b || !p || !b.offsetWidth) return; p.style.width = b.offsetWidth + 'px'; p.style.transform = `translateX(${b.offsetLeft}px)`; p.style.opacity = 1; };
+    el.addEventListener('click', e => { const b = e.target.closest('button'); if (!b || b.classList.contains('on')) return; $$('button', el).forEach(x => { x.classList.toggle('on', x === b); x.setAttribute('aria-pressed', x === b); }); place(); cue('tick'); fn(b.dataset.v); });
+    el._place = place; requestAnimationFrame(place); addEventListener('resize', place); if (document.fonts) document.fonts.ready.then(place); }
+  const placeSegs = () => $$('.seg').forEach(el => el._place && el._place());
+  function countTo(el, v, base) { if (!el || v == null || !isFinite(v)) return; const from = el._v ?? 0; el._v = v; el.className = base + ' ' + (v >= 0 ? 'g' : 'dn');
+    if (RM) { el.textContent = spct(v); return; } const t0 = performance.now(); cancelAnimationFrame(el._r); const st = now => { const k = clamp((now - t0) / 700); el.textContent = spct(from + (v - from) * out(k)); if (k < 1) el._r = requestAnimationFrame(st); }; el._r = requestAnimationFrame(st); }
+
+  function w2Series() { const H = S.hist; if (!H || !H.ser || !H.ser.SPY) return null; const n = H.t.length, len = RNG[W2.rng][0] ? Math.min(n, RNG[W2.rng][0]) : n, a = n - len;
+    const rel = arr => { const b0 = arr[a] || 1; return arr.slice(a).map(v => (v / b0 - 1) * 100); }, R = {}; for (const k of Object.keys(H.ser)) R[k] = rel(H.ser[k]);
+    const w = mixW(W2.mix), tot = Object.values(w).reduce((x, y) => x + y, 0) || 1, mix = R.SPY.map((_, i) => Object.entries(w).reduce((s, [c, k]) => s + (R[c] ? R[c][i] * k : 0), 0) / tot);
+    const ov = W2.pin || W2.hov, ok = ov && !CASH.test(ov) && R[ov]; return { t: H.t.slice(a), spy: R.SPY, mix, ov: ok ? R[ov] : null, ovc: ok ? ov : null }; }
+  const resamp = (arr, n) => { if (!arr) return null; if (arr.length === n) return arr.slice(); const m = arr.length - 1; return Array.from({ length: n }, (_, i) => { const x = i / (n - 1 || 1) * m, j = Math.floor(x), f = x - j; return arr[j] + ((arr[Math.min(m, j + 1)] ?? arr[j]) - arr[j]) * f; }); };
+  function w2Set(anim = true) { const s = w2Series(); w2Head(s); w2Legend(s); if (!s) return; const n = s.t.length, c = W2.cur;
+    W2.from = c ? { spy: resamp(c.spy, n), mix: resamp(c.mix, n), ov: s.ov ? (c.ov && c.ovc === s.ovc ? resamp(c.ov, n) : resamp(c.mix, n)) : null } : { spy: s.spy.map(() => 0), mix: s.mix.map(() => 0), ov: null };
+    W2.to = s; if (W2.idx != null) W2.idx = Math.min(W2.idx, n - 1); W2.t0 = anim && !RM ? performance.now() : 0; W2.dirty = true; const wt = $('#w2Wait'); if (wt) wt.hidden = true; }
+  function w2Head(s) { const b = S.b; if (!b) return; const w = mixW(W2.mix), sp0 = b.benchmark && b.benchmark.price; let mv, sp, rl;
+    if (s) { mv = s.mix[s.mix.length - 1]; sp = s.spy[s.spy.length - 1]; rl = RNG[W2.rng][1]; } else { mv = ch24Mix(w); sp = sp0 ? sp0.ch24 : null; rl = '24 hours'; }
+    setT('#w2Lbl', `${PNAME[W2.mix]} · ${rl}`); countTo($('#hwFour'), mv, 'wb-big'); if (sp != null) setT('#hwSpy', spct(sp), cls(sp));
+    if (mv != null && sp != null) { const d = mv - sp; setT('#hwGap', `${d >= 0 ? '+' : '−'}${Math.abs(d).toFixed(2)} pts`, cls(d)); }
+    const st = (b.stocks || []).filter(x => x.price && x.price.ch24 != null); if (st.length) setT('#hwDn', `${st.filter(x => x.price.ch24 < 0).length} of ${st.length}`); }
+  function w2Legend(s) { setT('#w2LgMix', PNAME[W2.mix]); const o = $('#w2LgOv'); if (!o) return; const h = s && s.ovc ? HBY(s.ovc) : null; o.hidden = !h; if (h) { o.textContent = h.symbol; o.style.color = HCOL[h.code]; } }
+  function w2List() { const L = $('#hwList'); if (!L || !HG().length) return; const w = mixW(W2.mix);
+    if (!L.querySelector('.hrow')) L.innerHTML = HG().map(h => `<div class="hrow" role="button" tabindex="0" data-k="${h.code}" style="--c:${HCOL[h.code]}">${hbadge(h.code)}<div class="nm"><b>${esc(h.name)}</b><small>${esc(h.symbol)}</small></div><div class="r"><b class="p"></b><small class="c"></small></div><span class="wt"></span><span class="wb"><i></i></span></div>`).join('');
+    const rows = $$('.hrow', L), first = new Map(rows.map(r => [r, r.getBoundingClientRect().top]));
+    HG().forEach(h => { const r = $(`.hrow[data-k="${h.code}"]`, L); if (!r) return; const p = h.price || {}, k = w[h.code]; $('.p', r).textContent = usd(p.usd); const c = $('.c', r); c.textContent = pct(p.ch24); c.className = 'c ' + cls(p.ch24);
+      r.classList.toggle('in', !!k); r.classList.toggle('pin', W2.pin === h.code); r.classList.toggle('flat', CASH.test(h.code)); $('.wt', r).textContent = k ? k + '%' : ''; r.style.setProperty('--w', (k || 0) + '%'); r.style.order = k ? 0 : 1; });
+    if (!RM) rows.forEach(r => { const d = first.get(r) - r.getBoundingClientRect().top; if (Math.abs(d) > 1) r.animate([{ transform: `translateY(${d}px)` }, { transform: 'none' }], { duration: 480, easing: 'cubic-bezier(.2,.9,.2,1)' }); }); }
+  function w2Frame(now) { requestAnimationFrame(w2Frame); const c = $('#w2Chart'); if (!c || !W2.to || !vis.win || document.hidden) return;
+    const k = W2.t0 ? clamp((now - W2.t0) / 650) : 1; if (k >= 1 && !W2.dirty) return; if (k >= 1) W2.dirty = false;
+    const e = io(k), T = W2.to, F = W2.from || T, Lp = (a, b) => a && b ? b.map((v, i) => (a[i] ?? v) + (v - (a[i] ?? v)) * e) : b;
+    const D = { t: T.t, spy: Lp(F.spy, T.spy), mix: Lp(F.mix, T.mix), ov: T.ov ? Lp(F.ov || F.mix, T.ov) : null, ovc: T.ovc }; W2.cur = D;
+    const [g, w, h] = fit(c), n = D.t.length, pr = 64, pb = 22, pt = 14, all = [...D.spy, ...D.mix, ...(D.ov || []), 0], lo = Math.min(...all), hi = Math.max(...all), pad = Math.max(.35, (hi - lo) * .1), mn = lo - pad, mx = hi + pad;
+    const X = i => i / (n - 1) * (w - pr), Y = v => pt + (h - pt - pb) * (1 - (v - mn) / (mx - mn)), pth = a => { g.beginPath(); g.moveTo(X(0), Y(a[0])); for (let i = 1; i < n; i++) { const xm = (X(i - 1) + X(i)) / 2, ym = (Y(a[i - 1]) + Y(a[i])) / 2; g.quadraticCurveTo(X(i - 1), Y(a[i - 1]), xm, ym); } g.lineTo(X(n - 1), Y(a[n - 1])); };
+    g.clearRect(0, 0, w, h); g.lineWidth = 1; g.strokeStyle = 'rgba(232,236,255,.06)'; [.2, .5, .8].forEach(f => { const y = pt + (h - pt - pb) * f; g.beginPath(); g.moveTo(0, y); g.lineTo(w - pr, y); g.stroke(); });
+    g.strokeStyle = 'rgba(232,236,255,.24)'; g.setLineDash([3, 5]); g.beginPath(); g.moveTo(0, Y(0)); g.lineTo(w - pr, Y(0)); g.stroke(); g.setLineDash([]);
+    g.font = '500 11.5px IN, sans-serif'; g.fillStyle = 'rgba(143,154,200,.75)'; g.textBaseline = 'alphabetic'; const md = W2.rng === 'd1' ? 'hr' : 'day';
+    [[0, 'left'], [Math.round((n - 1) / 2), 'center'], [n - 1, 'right']].forEach(([i, al]) => { g.textAlign = al; g.fillText(w2Date(D.t[i], md), X(i), h - 5); });
+    const gr = grad(g, 0, 0, w - pr, 0); g.save(); g.globalAlpha = .12; g.fillStyle = gr; g.beginPath(); D.mix.forEach((v, i) => i ? g.lineTo(X(i), Y(v)) : g.moveTo(X(i), Y(v))); for (let i = n - 1; i >= 0; i--) g.lineTo(X(i), Y(D.spy[i])); g.closePath(); g.fill(); g.restore();
+    const line = (a, col, lw, glow, al = 1) => { g.save(); g.globalAlpha = al; g.lineJoin = 'round'; g.lineCap = 'round'; g.lineWidth = lw; g.strokeStyle = col; if (glow) { g.shadowColor = glow; g.shadowBlur = 16; } pth(a); g.stroke(); g.restore(); };
+    line(D.spy, DN, 2, 'rgba(255,90,122,.4)'); if (D.ov) line(D.ov, HCOL[D.ovc] || LAV, 1.8, null, .95); line(D.mix, gr, 3, 'rgba(91,140,255,.5)');
+    const dot = (x, y, col) => { g.beginPath(); g.arc(x, y, 4.5, 0, 6.3); g.fillStyle = col; g.fill(); g.lineWidth = 2; g.strokeStyle = 'rgba(4,7,22,.9)'; g.stroke(); };
+    const ends = [[D.spy, DN], [D.mix, SEG[1]], ...(D.ov ? [[D.ov, HCOL[D.ovc]]] : [])], li = n - 1, sc = W2.idx != null;
+    g.save(); g.globalAlpha = sc ? .3 : 1; const lab = ends.map(([a, col]) => ({ y: Y(a[li]), v: a[li], col })).sort((p, q) => p.y - q.y); for (let i = 1; i < lab.length; i++) if (lab[i].y - lab[i - 1].y < 17) lab[i].y = lab[i - 1].y + 17;
+    ends.forEach(([a, col]) => dot(X(li), Y(a[li]), col)); g.font = '700 12.5px IN, sans-serif'; g.textAlign = 'left'; g.textBaseline = 'middle'; lab.forEach(p => { g.fillStyle = p.col; g.fillText(spct(p.v), w - pr + 10, clamp(p.y, 8, h - pb)); }); g.restore();
+    const tip = $('#w2Tip'); if (!sc) { if (tip) tip.hidden = true; return; }
+    const i = Math.min(n - 1, W2.idx), x = X(i); g.strokeStyle = 'rgba(232,236,255,.3)'; g.lineWidth = 1; g.beginPath(); g.moveTo(x, pt - 6); g.lineTo(x, h - pb); g.stroke(); ends.forEach(([a, col]) => dot(x, Y(a[i]), col));
+    if (!tip) return; const row = (bg, name, v) => `<span><i style="background:${bg}"></i>${esc(name)}<em class="${cls(v)}">${spct(v)}</em></span>`;
+    tip.innerHTML = `<b>${w2Date(D.t[i], 'full')}</b>` + row('var(--grad)', PNAME[W2.mix], D.mix[i]) + row(DN, 'S&P 500', D.spy[i]) + (D.ov ? row(HCOL[D.ovc], HBY(D.ovc).symbol, D.ov[i]) : '');
+    tip.hidden = false; const tw = tip.offsetWidth; let l = x + 16; if (l + tw > w - 4) l = x - 16 - tw; tip.style.transform = `translate(${Math.max(0, l)}px, 0)`; }
+  function w2Init() { const box = $('#w2Box'), win = $('#win'); if (!box || box._on) return; box._on = 1; watch(win, 'win');
+    const mv = e => { if (!W2.to) return; const r = box.getBoundingClientRect(), n = W2.to.t.length, i = Math.round(clamp((e.clientX - r.left) / (r.width - 64)) * (n - 1)); if (i !== W2.idx) { W2.idx = i; W2.dirty = true; } };
+    const off = () => { W2.idx = null; W2.dirty = true; };
+    box.addEventListener('pointermove', mv); box.addEventListener('pointerdown', mv); box.addEventListener('pointerleave', off); box.addEventListener('pointerup', e => { if (e.pointerType === 'touch') setTimeout(off, 1400); });
+    if (!COARSE && !RM) win.addEventListener('pointermove', e => { const r = win.getBoundingClientRect(); win.style.setProperty('--lx', (e.clientX - r.left).toFixed(0) + 'px'); win.style.setProperty('--ly', (e.clientY - r.top).toFixed(0) + 'px'); });
+    segInit($('#w2Mix'), v => { W2.mix = v; w2List(); w2Set(); }); segInit($('#w2Rng'), v => { W2.rng = v; W2.idx = null; w2Set(); });
+    const L = $('#hwList'), hov = c => { if (c === W2.hov) return; W2.hov = c; if (!W2.pin) w2Set(); };
+    L.addEventListener('pointerover', e => { if (e.pointerType === 'touch') return; const r = e.target.closest('.hrow'); hov(r ? r.dataset.k : null); }); L.addEventListener('pointerleave', () => hov(null));
+    const pick = r => { if (!r) return; if (CASH.test(r.dataset.k)) { toast('Cash holds still: a dollar is a dollar, so there is no line to draw.'); return; } W2.pin = W2.pin === r.dataset.k ? null : r.dataset.k; cue('pop'); w2List(); w2Set(); };
+    L.addEventListener('click', e => pick(e.target.closest('.hrow'))); L.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(e.target.closest('.hrow')); } });
+    addEventListener('resize', () => { W2.dirty = true; });
+    setTimeout(() => { if (!S.hist) setT('#w2Wait', 'the 15-day history is busy right now · the 24h numbers above are live'); }, 16000);
+    requestAnimationFrame(w2Frame); }
+
+  // how it works: the mix you tap in step 1 is what step 3 buys
+  const HOW = { auto: true, i: 0, on: false };
+  function howSet(id) { if (!S.b || !$('.pchips')) return; let w; if (id === 'custom') { const pool = ['G', 'P', 'X', 'S', 'Q', 'V', 'U', 'T', 'E'].sort(() => Math.random() - .5); w = equalSplit(pool.slice(0, 2 + Math.floor(Math.random() * 3))); } else w = mixW(id);
+    $$('.pchips button').forEach(b => b.classList.toggle('on', b.dataset.p === id)); const codes = Object.keys(w), top = Math.max(...codes.map(c => w[c]));
+    $$('.pbar i').forEach((el, i) => { const c = codes[i]; el.style.flex = c ? w[c] : 0.0001; el.style.background = c ? HCOL[c] : 'transparent'; });
+    setT('#howLeg', codes.map(c => `${w[c]}% ${HBY(c) ? HBY(c).name.toLowerCase() : c}`).join(' · '));
+    const bars = $('#howBars'); if (bars) { bars.style.gridTemplateColumns = `repeat(${codes.length}, minmax(0, 1fr))`; $$(':scope > div', bars).forEach((d, i) => { const c = codes[i]; d.hidden = !c; if (!c) return; d.style.setProperty('--h', (w[c] / top).toFixed(3)); $('i', d).style.setProperty('--c', HCOL[c]); $('span', d).textContent = `${w[c]}% ${HBY(c) ? HBY(c).symbol : c}`; }); } }
+  function howInit() { const ch = $('.pchips'); if (!ch || HOW.on || !S.b) return; HOW.on = true; watch($('#how'), 'how');
+    ch.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; HOW.auto = false; howSet(b.dataset.p); cue('tick'); });
+    setInterval(() => { if (!HOW.auto || !vis.how || document.hidden) return; const ids = ['classic', 'shield', 'haven', 'metal']; HOW.i = (HOW.i + 1) % ids.length; howSet(ids[HOW.i]); }, 2800); howSet('classic'); }
+
+  // the nine hedges: scrub any 15-day chart, tap + to build your own hedge
+  const HP = [];
+  function hpRender() { const sel = HP.length ? equalSplit(HP.slice()) : {}; $$('#hgrid .hc').forEach(el => { const on = HP.includes(el.dataset.k); el.classList.toggle('pk', on); const b = $('.hpick', el); if (b) { b.textContent = on ? '✓' : '+'; b.setAttribute('aria-pressed', on); } });
+    const t = $('#htray'); if (!t) return; t.hidden = !HP.length; $('#htChips').innerHTML = HP.map(c => `<span style="--c:${HCOL[c]}">${sel[c]}% ${esc(HBY(c) ? HBY(c).symbol : c)}</span>`).join(''); }
+  function hgInit() { const g = $('#hgrid'); if (!g || g._v7) return; g._v7 = 1;
+    g.addEventListener('click', e => { const b = e.target.closest('.hpick'); if (!b) return; const c = b.dataset.c, i = HP.indexOf(c); if (i >= 0) HP.splice(i, 1); else { if (HP.length >= 4) { toast('Up to four assets per hedge.'); return; } HP.push(c); } cue(i >= 0 ? 'tick' : 'pop'); hpRender(); });
+    const go = $('#htGo'); if (go) go.addEventListener('click', () => { if (!HP.length || !$('#launch')) return; LN.preset = 'custom'; LN.sel = equalSplit(HP.slice()); renderLauncher(); $('#launch').scrollIntoView({ behavior: RM ? 'auto' : 'smooth' }); });
+    const restore = c => { const el = c.closest('.hc'), k = el && el.dataset.k, a = S.hist && S.hist.ser[k]; if (a) smooth(c, a, HCOL[k]); el.classList.remove('scrub'); renderHedges(); };
+    g.addEventListener('pointermove', e => { const c = e.target; if (c.tagName !== 'CANVAS' || !S.hist) return; const el = c.closest('.hc'), k = el.dataset.k, a = S.hist.ser[k]; if (!a || CASH.test(k)) return;
+      const r = c.getBoundingClientRect(), n = a.length, i = Math.round(clamp((e.clientX - r.left) / r.width) * (n - 1)); if (c._i === i) return; c._i = i; smooth(c, a, HCOL[k]);
+      const [gg, w, h] = fit(c), lo = Math.min(...a), hi = Math.max(...a), x = i / (n - 1) * w, y = h - 3 - (a[i] - lo) / (hi - lo || 1) * (h - 8);
+      gg.strokeStyle = 'rgba(232,236,255,.35)'; gg.lineWidth = 1; gg.beginPath(); gg.moveTo(x, 0); gg.lineTo(x, h); gg.stroke(); gg.beginPath(); gg.arc(x, y, 4, 0, 6.3); gg.fillStyle = HCOL[k]; gg.fill(); gg.lineWidth = 2; gg.strokeStyle = 'rgba(4,7,22,.9)'; gg.stroke();
+      el.classList.add('scrub'); $('.px b', el).textContent = usd(a[i]); const ch = (a[i] / a[0] - 1) * 100, sm2 = $('.px small', el); sm2.textContent = `${spct(ch)} · ${w2Date(S.hist.t[i], 'day')}`; sm2.className = cls(ch); });
+    g.addEventListener('pointerout', e => { if (e.target.tagName === 'CANVAS' && !(e.relatedTarget && e.relatedTarget === e.target)) { e.target._i = null; restore(e.target); } }); }
+
+  // the stock board: sort it
+  function bsInit() { segInit($('#bsSort'), v => { S.bsort = v; const el = $('#tiles'); renderBoard(); if (!el || RM) return; el.classList.remove('resort'); void el.offsetWidth; el.classList.add('resort'); }); }
+
+  // the fee: drag the volume, watch the 1% split into a hedge
+  const CALC = { mix: 'classic', v: 541 };
+  const volOf = v => { const x = Math.pow(5000, v / 1000); return x < 10 ? Math.round(x * 10) / 10 : x < 100 ? Math.round(x) : x < 1000 ? Math.round(x / 10) * 10 : Math.round(x / 100) * 100; };
+  const sol = x => (x >= 100 ? x.toFixed(0) : x >= 1 ? x.toFixed(2) : x >= .01 ? x.toFixed(3) : x.toFixed(4)) + ' SOL';
+  function calcRender() { const r = $('#cRange'); if (!r) return; const vol = volOf(CALC.v), fee = vol * .01, w = mixW(CALC.mix), tot = Object.values(w).reduce((a, b) => a + b, 0) || 1, px = S.b && S.b.sol && S.b.sol.usd;
+    r.style.setProperty('--f', (CALC.v / 10).toFixed(1) + '%'); setT('#cVol', vol.toLocaleString('en-US') + ' SOL'); setT('#cOut', sol(fee)); setT('#cUsd', px ? `≈ ${usd(fee * px, 2)} · buys its hedge` : 'buys its hedge'); setT('#cLL', sol(vol * .0025));
+    const box = $('#cBars'), key = CALC.mix; if (box._k !== key) { box._k = key; box.innerHTML = Object.entries(w).map(([c, k]) => { const h = HBY(c); return `<div class="cb" data-c="${c}" style="--c:${HCOL[c]}">${hbadge(c)}<span class="cbn"><b>${esc(h ? h.name : c)}</b><small>${k}% · ${esc(h ? h.symbol : c)}</small></span><span class="cbw"><i style="width:${(k / tot * 100).toFixed(1)}%"></i></span><b class="cba"></b></div>`; }).join(''); }
+    $$('.cb', box).forEach(el => { $('.cba', el).textContent = sol(fee * (w[el.dataset.c] || 0) / tot); }); }
+  function calcInit() { const r = $('#cRange'), m = $('#cMix'); if (!r || r._on || !S.b) return; r._on = 1;
+    m.innerHTML = '<i class="seg-pill"></i>' + (S.b.presets || []).map((p, i) => `<button data-v="${p.id}"${i ? '' : ' class="on"'}>${esc(p.name)}</button>`).join('');
+    segInit(m, v => { CALC.mix = v; calcRender(); }); r.addEventListener('input', () => { CALC.v = +r.value; calcRender(); }); calcRender(); }
+
+  function v7Init() { w2Init(); howInit(); hgInit(); bsInit(); calcInit(); placeSegs(); }
+
   function start() {
     drawMarks(); bgInit(); heroParallax(); tiltInit(); watch($('#win'), 'win'); marqInit(); dialDrag(); stageInit(); chartInit(); pushInit(); ringInit(); simInit(); watch($('#wv3'), 'wv3'); reveals(); clock(); setInterval(clock, 20000);
     watch($('#pipe'), 'pipe'); watch($('.outro'), 'outro');
     const snd = $('#snd'), sndUi = () => snd.classList.toggle('on', !!(window.MINTSOUND && MINTSOUND.on)); snd.onclick = e => { e.stopPropagation(); window.MINTSOUND && MINTSOUND.toggle(); }; document.addEventListener('mintsound', sndUi); sndUi();
     addEventListener('scroll', onScroll, { passive: true }); onScroll(); addEventListener('resize', () => { drawMarks(); CH.t0 = 0; CH.w = 0; EQ.w = 0; PP.nodes = null; renderDetail(false); });
     requestAnimationFrame(stageFrame); requestAnimationFrame(marqFrame); requestAnimationFrame(cdFrame); requestAnimationFrame(chartFrame); requestAnimationFrame(eqFrame); requestAnimationFrame(pipeFrame); requestAnimationFrame(outroFrame); requestAnimationFrame(winFrame); requestAnimationFrame(donutFrame); requestAnimationFrame(wv3Frame);
-    loadTreasury(); loadCoins(); walletInit(); setInterval(loadBasket, 45000); setInterval(() => { loadTreasury(); loadCoins(); }, 60000);
+    v7Init(); loadTreasury(); loadCoins(); walletInit(); setInterval(loadBasket, 45000); setInterval(() => { loadTreasury(); loadCoins(); }, 60000);
   }
   const fonts = Promise.all([document.fonts.load('700 100px ID'), document.fonts.load('700 30px PX'), document.fonts.load('600 14px JB'), document.fonts.load('500 16px IN')]).catch(() => { });
   const data = loadBasket();

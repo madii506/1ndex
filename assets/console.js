@@ -1,4 +1,4 @@
-// 1ndex console: create the launchpad, launch $1NDEX, claim, buy the four. Every transaction is signed in the visitor's wallet.
+// 1ndex console: create the launchpad, claim, buy each coin's hedge. Every transaction is signed in the visitor's wallet.
 (() => {
   const $ = s => document.querySelector(s); const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const S = { wallet: null, p: null, plan: null }; const short = a => a ? a.slice(0, 4) + '…' + a.slice(-4) : '';
@@ -21,22 +21,21 @@
   $('#padBtn').onclick = async () => { const st = stat('#padStat'); try { await connect(); st('building the LaunchLab transaction…');
       const r = await api('buildPad', { wallet: S.wallet, feePct: 1, burnPct: 50, web: location.origin, img: location.origin + '/coin.png' }); const s = await signSend(r.txs, st);
       st(`the 1ndex launchpad is live: <b>${esc(r.pad)}</b>\ntransaction ${tx(s.sigs[0])}\nsend this launchpad address over so the site can pin it.`, 'ok'); setTimeout(refresh, 2500); } catch (e) { st(esc(e.message), 'err'); } };
-  $('#launchBtn').onclick = async () => { const st = stat('#launchStat'); try { await connect(); st('building $1NDEX…');
-      const r = await api('buildLaunch', { wallet: S.wallet, buySol: +$('#buySol').value || 0, image: location.origin + '/coin.png' }); const s = await signSend(r.txs, st);
-      st(`$1NDEX is live on Raydium LaunchLab.\nmint <b>${esc(r.mint)}</b>\npool ${esc(r.pool)}\ntransaction ${tx(s.sigs[0])}\n<a href="https://raydium.io/launchpad/token/?mint=${r.mint}" target="_blank" rel="noopener">open it on Raydium ↗</a>`, 'ok'); } catch (e) { st(esc(e.message), 'err'); } };
   $('#claimBtn').onclick = async () => { const st = stat('#claimStat'); try { await connect(); st('building the claim…'); const r = await api('claim', { wallet: S.wallet }); const s = await signSend(r.txs, st); st(`claimed. ${tx(s.sigs[0])}`, 'ok'); setTimeout(refresh, 2500); } catch (e) { st(esc(e.message), 'err'); } };
-  // buy the four: spend SOL on whichever is furthest under a quarter
-  $('#planBtn').onclick = async () => { const st = stat('#buyStat'); try { await connect(); st('reading the treasury and prices…');
-      const [b, h] = await Promise.all([api('basket'), api('holdings', null, '&wallet=' + S.wallet)]); const solUsd = b.sol && b.sol.usd; if (!solUsd) throw new Error('no SOL price right now');
-      const spend = Math.min(+$('#spendSol').value || 0, Math.max(0, h.sol - .05)); if (spend < .01) throw new Error(`not enough SOL: this wallet has ${h.sol.toFixed(3)} SOL and keeps 0.05 for fees`);
-      const val = h.holdings.map(x => x.usd), T = val.reduce((a, x) => a + x, 0) + spend * solUsd, gap = val.map(v => Math.max(0, T / 4 - v)), G = gap.reduce((a, x) => a + x, 0) || 1;
-      S.plan = b.members.map((m, i) => ({ m, sol: spend * gap[i] / G })).filter(x => x.sol >= .01);
-      $('#plan').innerHTML = b.members.map((m, i) => { const p = S.plan.find(x => x.m.mint === m.mint); return `<div><b>${esc(m.symbol)}</b><span>holds $${val[i].toFixed(2)}</span><span>target $${(T / 4).toFixed(2)}</span><span>${p ? `buy ${p.sol.toFixed(3)} SOL` : '—'}</span></div>`; }).join('');
-      $('#buyBtn').disabled = !S.plan.length; st(S.plan.length ? `ready: ${S.plan.length} swap${S.plan.length > 1 ? 's' : ''} through Jupiter.` : 'every part is at or over a quarter.'); } catch (e) { st(esc(e.message), 'err'); } };
+  // buy a coin's hedge: spend SOL across its hedge, by the weights in its metadata link
+  S.coins = []; S.hedges = [];
+  async function loadCoins() { try { const [c, b] = await Promise.all([api('coins'), api('basket')]); S.coins = c.coins || []; S.hedges = b.hedges || [];
+      $('#coinSel').innerHTML = S.coins.length ? S.coins.map(k => `<option value="${k.mint}">$${esc(k.symbol)} · ${(k.hedge || []).map(p => p.w + '% ' + p.code).join(' ') || 'no hedge'}${k.volumeUsd ? ' · fees ≈ $' + (k.volumeUsd * .01).toFixed(2) : ''}</option>`).join('') : `<option value="">${c.open ? 'no coins on the launchpad yet' : 'the launchpad is not pinned on the site yet'}</option>`; } catch (e) { $('#coinSel').innerHTML = `<option value="">${esc(e.message)}</option>`; } }
+  loadCoins();
+  $('#planBtn').onclick = async () => { const st = stat('#buyStat'); try { await connect(); const k = S.coins.find(x => x.mint === $('#coinSel').value); if (!k) throw new Error('pick a coin'); if (!(k.hedge || []).length) throw new Error('this coin has no hedge in its metadata');
+      st('reading this wallet…'); const h = await api('holdings', null, '&wallet=' + S.wallet); const spend = Math.min(+$('#spendSol').value || 0, Math.max(0, h.sol - .05)); if (spend < .01) throw new Error(`not enough SOL: this wallet has ${h.sol.toFixed(3)} SOL and keeps 0.05 for fees`);
+      S.plan = k.hedge.map(p => ({ m: S.hedges.find(x => x.code === p.code), sol: spend * p.w / 100, w: p.w })).filter(x => x.m && x.sol >= .005);
+      $('#plan').innerHTML = S.plan.map(x => `<div><b>${esc(x.m.symbol)}</b><span>${esc(x.m.name)}</span><span>${x.w}%</span><span>buy ${x.sol.toFixed(4)} SOL</span></div>`).join('');
+      $('#buyBtn').disabled = !S.plan.length; st(S.plan.length ? `ready: ${S.plan.length} swap${S.plan.length > 1 ? 's' : ''} through Jupiter for $${esc(k.symbol)}.` : 'nothing to buy.'); } catch (e) { st(esc(e.message), 'err'); } };
   $('#buyBtn').onclick = async () => { const st = stat('#buyStat'); try { await connect(); if (!S.plan || !S.plan.length) throw new Error('plan first'); st('getting Jupiter routes…'); const list = [];
-      for (const x of S.plan) { const lam = Math.floor(x.sol * 1e9); const q = await fetch(`${JUP}/swap/v1/quote?inputMint=${SOL}&outputMint=${x.m.mint}&amount=${lam}&slippageBps=150`).then(r => r.json()); if (!q.outAmount) throw new Error('no route for ' + x.m.symbol);
+      for (const x of S.plan) { const lam = Math.floor(x.sol * 1e9); const q = await fetch(`${JUP}/swap/v1/quote?inputMint=${SOL}&outputMint=${x.m.mint}&amount=${lam}&slippageBps=150`).then(r => r.json()); if (!q.outAmount) throw new Error('no Jupiter route for ' + x.m.symbol + ' right now');
         const s = await fetch(`${JUP}/swap/v1/swap`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ quoteResponse: q, userPublicKey: S.wallet, wrapAndUnwrapSol: true, dynamicComputeUnitLimit: true, prioritizationFeeLamports: { priorityLevelWithMaxLamports: { maxLamports: 300000, priorityLevel: 'high' } } }) }).then(r => r.json());
         if (!s.swapTransaction) throw new Error('Jupiter returned no swap for ' + x.m.symbol); list.push(s.swapTransaction); }
-      const r = await signSend(list, st, true); st(`bought the four. ${r.sigs.map(tx).join(' · ')}`, 'ok'); $('#buyBtn').disabled = true; } catch (e) { st(esc(e.message), 'err'); } };
+      const r = await signSend(list, st, true); st(`bought the hedge. ${r.sigs.map(tx).join(' · ')}`, 'ok'); $('#buyBtn').disabled = true; } catch (e) { st(esc(e.message), 'err'); } };
   const ps = providers(); if (ps.length && ps[0][1].connect) ps[0][1].connect({ onlyIfTrusted: true }).then(r => { if (r && r.publicKey) { S.wallet = r.publicKey.toString(); S.p = ps[0][1]; $('#connect').textContent = ps[0][0] + ' · ' + short(S.wallet); refresh(); } }).catch(() => {});
 })();

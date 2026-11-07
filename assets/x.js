@@ -90,7 +90,7 @@
     g.beginPath(); a.forEach((v, i) => i ? g.lineTo(X(i), Y(v)) : g.moveTo(X(i), Y(v))); g.lineJoin = 'round'; g.lineWidth = 2; g.strokeStyle = col; g.stroke(); }
   // cards lean toward the cursor
   function tiltInit() { if (COARSE || RM) return; let cur = null;
-    document.addEventListener('pointermove', e => { const el = e.target.closest && e.target.closest('.hcard, .rcard, a.tile, .vault, .bsum'); if (cur && cur !== el) { cur.style.transform = ''; } cur = el; if (!el) return;
+    document.addEventListener('pointermove', e => { const el = e.target.closest && e.target.closest('.hcard, .rcard, a.tile, .vault, .bsum, .hc'); if (cur && cur !== el) { cur.style.transform = ''; } cur = el; if (!el) return;
       const b = el.getBoundingClientRect(), x = (e.clientX - b.left) / b.width - .5, y = (e.clientY - b.top) / b.height - .5; el.style.transform = `perspective(900px) rotateX(${(-y * 5).toFixed(2)}deg) rotateY(${(x * 6).toFixed(2)}deg) translateY(-3px)`; }, { passive: true }); }
 
   // ---------------------------------------------------------------- the four: a smooth donut, one segment per asset
@@ -143,13 +143,13 @@
 
   // ---------------------------------------------------------------- live prices
   async function loadBasket() { try { S.b = await api('basket'); onBasket(); } catch (e) { if (!S.b) { $('#tape').innerHTML = '<span>prices are busy right now, retrying</span>'; setT('#liveTxt', 'prices are busy, retrying…'); setT('#say', 'prices are busy right now. the seesaw moves as soon as they answer.'); } } }
-  function onBasket() { renderTape(); renderLive(); renderWin(); renderFloats(); renderBoard(); renderPicker(); renderPools(); stageData(); renderVaults(); }
+  function onBasket() { renderTape2(); renderWin2(); renderFloats2(); renderBoard(); renderHedges(); renderPools2(); renderVaults2(); if (!LN.inited) { LN.inited = true; launchInit(); } else renderLaunchBtn(); }
   function renderTape() { if (!$('#tape')) return; const b = S.b, spy = b.benchmark && b.benchmark.price, items = [];
     if (spy) items.push(`S&amp;P 500 (SPYx) <em>${usd(spy.usd)}</em> <span class="${cls(spy.ch24)}">${pct(spy.ch24)}</span>`);
     M().forEach(m => { const p = m.price; if (p) items.push(`${esc(NAMES[m.symbol] || m.symbol)} (${esc(m.ticker)}) <em>${usd(p.usd)}</em> <span class="${cls(p.ch24)}">${pct(p.ch24)}</span>`); });
     if (b.ch24 != null) items.push(`the 1ndex four <span class="${cls(b.ch24)}">${pct(b.ch24)}</span>`); if (b.sol) items.push(`SOL <em>${usd(b.sol.usd)}</em>`);
     const one = items.map(x => `<span>${x}</span>`).join(''); $('#tape').innerHTML = one + one; }
-  function renderLive() { const spy = S.b.benchmark && S.b.benchmark.price; if (!spy) return; const wl = $('#whyLive'); if (wl && S.b.sol) wl.innerHTML = `right now, over 24h: the S&amp;P 500 <span class="${cls(spy.ch24)}">${pct(spy.ch24)}</span> · SOL <span class="${cls(S.b.sol.ch24)}">${pct(S.b.sol.ch24)}</span>`; const red = spy.ch24 < 0, el = $('#live'); el.classList.toggle('red', red); el.classList.toggle('green', !red);
+  function renderLive() { if (!$('#live')) return; const spy = S.b.benchmark && S.b.benchmark.price; if (!spy) return; const wl = $('#whyLive'); if (wl && S.b.sol) wl.innerHTML = `right now, over 24h: the S&amp;P 500 <span class="${cls(spy.ch24)}">${pct(spy.ch24)}</span> · SOL <span class="${cls(S.b.sol.ch24)}">${pct(S.b.sol.ch24)}</span>`; const red = spy.ch24 < 0, el = $('#live'); el.classList.toggle('red', red); el.classList.toggle('green', !red);
     $('#liveTxt').innerHTML = `<b>live</b> · stocks ${red ? 'down' : 'up'} 24h · launching on Raydium LaunchLab`; }
 
 
@@ -342,7 +342,7 @@
       $$('#chips4 button').forEach(b => b.addEventListener('click', () => pick(+b.dataset.i, true))); renderDetail(true); }
     else renderDetail(false); }
   function pick(i, user) { if (user) RP.auto = false; if (i === RP.sel && !user) return; RP.sel = i; cue('pop'); renderDetail(true); }
-  function renderDetail(swap) { const m = M()[RP.sel]; if (!m) return; const i = RP.sel, p = m.price || {}, d = $('#detail'), note = String(m.note || '');
+  function renderDetail(swap) { if (!$('#detail')) return; const m = M()[RP.sel]; if (!m) return; const i = RP.sel, p = m.price || {}, d = $('#detail'), note = String(m.note || '');
     d.style.setProperty('--c', SEG[i]); $$('#chips4 button').forEach((b, j) => { b.classList.toggle('on', j === i); b.setAttribute('aria-selected', j === i); });
     d.innerHTML = `<div class="dt-top">${badge(m.symbol, i, 'lg')}<div><div class="dt-k">0${i + 1} · a quarter of the index</div><div class="dt-tk">${esc(m.ticker)} · ${esc(m.name)}</div></div></div>`
       + `<h3 class="dt-name">${esc(NAMES[m.symbol])}</h3><div class="dt-px"><b>${usd(p.usd)}</b><span class="${cls(p.ch24)}">${pct(p.ch24)} 24h</span></div><canvas class="dt-spark" aria-label="15 days"></canvas>`
@@ -350,7 +350,7 @@
     if (swap) { d.classList.remove('swap'); void d.offsetWidth; d.classList.add('swap'); }
     RP.drawn = null; const sp = $('.dt-spark', d);
     if (S.hist) { if (m.symbol === 'USD') smooth(sp, S.hist.t.map(() => 1), SEG[i]); else if (S.hist.ser[m.symbol]) smooth(sp, S.hist.ser[m.symbol], SEG[i]); } }
-  function ringInit() { const c = $('#ringCv'); watch(c, 'ring');
+  function ringInit() { const c = $('#ringCv'); if (!c) return; watch(c, 'ring');
     const at = e => { const b = c.getBoundingClientRect(), x = (e.clientX - b.left) / b.width - .5, y = (e.clientY - b.top) / b.height - .5, r = Math.hypot(x, y); if (r < .2 || r > .52) return -1; let a = Math.atan2(y, x) + Math.PI / 2; if (a < 0) a += Math.PI * 2; return Math.floor(a / (Math.PI / 2)) % 4; };
     c.addEventListener('pointermove', e => { const k = at(e); RP.hover = k; c.style.cursor = k >= 0 ? 'pointer' : 'default'; });
     c.addEventListener('pointerleave', () => RP.hover = -1);
@@ -439,7 +439,7 @@
     const pr = Math.min(1, c.progress || 0);
     box.innerHTML = `<div class="clive"><div class="cp"><div><small>market cap</small><b>${(+c.mcapSol).toFixed(1)} SOL</b></div><div><small>raised</small><b>${c.raisedSol.toFixed(2)} / ${c.raiseSol} SOL</b></div><div><small>to the index so far</small><b>${c.platformFeeSol.toFixed(3)} SOL</b></div></div><div class="cbar"><i style="width:${(pr * 100).toFixed(1)}%"></i></div><p class="fine">${c.graduated ? 'graduated to Raydium' : 'on its LaunchLab curve'} · <a href="https://raydium.io/launchpad/token/?mint=${c.mint}" target="_blank" rel="noopener">trade on Raydium ↗</a> · <a href="https://solscan.io/token/${c.mint}" target="_blank" rel="noopener">${short(c.mint)} ↗</a></p></div>`;
   } catch (e) { box.innerHTML = `<div class="empty">couldn't read the chain (${esc(e.message)}). retrying.</div>`; } }
-  async function loadTreasury() { try { S.tre = await api('treasury'); } catch (e) { S.tre = { error: e.message }; } renderVaults(); if (S.tre && S.tre.live) loadActivity(); }
+  async function loadTreasury() { try { S.tre = await api('treasury'); } catch (e) { S.tre = { error: e.message }; } renderVaults2(); if (S.tre && S.tre.live) loadActivity(); }
   function renderVaults() { const el = $('#vaults'); if (!el || !M().length) return; const t = S.tre, live = t && t.live, tot = live ? t.basketUsd || 0 : 0;
     el.innerHTML = M().map((m, i) => { const h = live ? (t.holdings || []).find(x => x.symbol === m.symbol) : null, share = h && tot ? h.usd / tot * 100 : 0, f = Math.min(100, share / 25 * 100);
       return `<div class="vault" style="--c:${SEG[i]};--f:${f.toFixed(1)}"><div class="vt">${badge(m.symbol, i)}<div><b>${esc(NAMES[m.symbol])}</b><small>${esc(m.ticker)}</small></div></div><div class="vring"><span><b>${live ? share.toFixed(1) + '%' : '0%'}</b><small>${t && t.error ? 'offline' : 'of 25%'}</small></span></div><div class="vn"><span>held</span><b>${h ? usd(h.usd, 2) : '$0.00'}</b></div></div>`; }).join('');
@@ -477,6 +477,100 @@
     mv.addEventListener('pointerdown', e => { d = { y: e.clientY, v: +t.value }; mv.setPointerCapture(e.pointerId); });
     mv.addEventListener('pointermove', e => { if (!d) return; const v = clamp(Math.round(d.v - (e.clientY - d.y) / 12), -15, 5); if (v !== +t.value) { t.value = v; cue('tick'); renderPush(); } });
     const up = () => d = null; mv.addEventListener('pointerup', up); mv.addEventListener('pointercancel', up); }
+  // ================================================================ v6: a launchpad for coins that hedge the stock market
+  const HCOL = { G: '#f5c542', P: '#e8a93a', X: '#d4913a', S: '#c3cee0', Q: '#5b8cff', V: '#c200fb', U: '#22d1f8', T: '#3fe6a6', E: '#9b63ff' };
+  const HMONO = { G: 'Au', P: 'PX', X: 'XT', S: 'Ag', Q: 'SQ', V: 'VX', U: '$', T: '₮', E: '€' };
+  const HG = () => (S.b && S.b.hedges) || [], HBY = c => HG().find(h => h.code === c);
+  const hbadge = (c, cls2) => `<span class="mb${cls2 ? ' ' + cls2 : ''}" style="--c:${HCOL[c] || SEG[0]}">${HMONO[c] || c}</span>`;
+  // the window under the headline: every hedge, live
+  function renderWin2() { const b = S.b; if (!b || !$('#win')) return; const spy = b.benchmark && b.benchmark.price, hf = $('#hwFour');
+    if (b.ch24 != null) { hf.textContent = spct(b.ch24); hf.className = 'wb-big ' + (b.ch24 >= 0 ? 'g' : 'dn'); } if (spy) setT('#hwSpy', spct(spy.ch24), cls(spy.ch24));
+    const st = (b.stocks || []).filter(x => x.price && x.price.ch24 != null); if (st.length) setT('#hwDn', `${st.filter(x => x.price.ch24 < 0).length} of ${st.length}`);
+    $('#hwList').innerHTML = HG().map(h => { const p = h.price || {}; return `<div class="hrow" style="--c:${HCOL[h.code]}">${hbadge(h.code)}<div><b>${esc(h.name)}</b><small>${esc(h.symbol)}</small></div><div class="r"><b>${usd(p.usd)}</b><small class="${cls(p.ch24)}">${pct(p.ch24)}</small></div></div>`; }).join(''); }
+  function renderFloats2() { $$('.fcard').forEach(el => { const h = HBY(el.dataset.k); if (!h) return; if (!el.dataset.on) { el.dataset.on = 1; el.innerHTML = `${hbadge(h.code)}<div><b>${esc(h.symbol)}</b><small>${esc(h.name)}</small></div><em></em><canvas></canvas>`; }
+    const p = h.price || {}, em = $('em', el); em.textContent = pct(p.ch24); em.className = cls(p.ch24); if (S.hist && S.hist.ser[h.code]) smooth($('canvas', el), S.hist.ser[h.code], HCOL[h.code]); }); }
+  function renderTape2() { const t = $('#tape'); if (!t || !S.b) return; const b = S.b, spy = b.benchmark && b.benchmark.price, items = [];
+    if (spy) items.push(`S&amp;P 500 <em>${usd(spy.usd)}</em> <span class="${cls(spy.ch24)}">${pct(spy.ch24)}</span>`);
+    (b.stocks || []).slice(1, 10).forEach(s => { const p = s.price; if (p) items.push(`${esc(s.symbol)} <em>${usd(p.usd)}</em> <span class="${cls(p.ch24)}">${pct(p.ch24)}</span>`); });
+    HG().forEach(h => { const p = h.price; if (p) items.push(`${esc(h.symbol)} <em>${usd(p.usd)}</em> <span class="${cls(p.ch24)}">${pct(p.ch24)}</span>`); });
+    const one = items.map(x => `<span>${x}</span>`).join(''); t.innerHTML = one + one; }
+  // the nine hedges
+  function renderHedges() { const g = $('#hgrid'); if (!g || !HG().length) return; const kind = { gold: 'gold', silver: 'silver', short: 'short the Nasdaq', vol: 'volatility', cash: 'cash' };
+    if (!g.dataset.on) { g.dataset.on = 1; g.innerHTML = HG().map((h, i) => `<div class="hc rv vis" style="--c:${HCOL[h.code]};--d:${i % 3}" data-k="${h.code}">${hbadge(h.code)}<div class="nm"><b>${esc(h.name)}</b><small>${esc(h.symbol)} · ${esc(h.full)}</small></div><div class="px"><b></b><small></small></div><canvas aria-label="15 days"></canvas><p>${esc(h.note)}</p><div class="kd"><span>${kind[h.kind] || h.kind}</span><span class="lq"></span></div></div>`).join(''); }
+    HG().forEach(h => { const el = $(`.hc[data-k="${h.code}"]`, g); if (!el) return; const p = h.price || {}; $('.px b', el).textContent = usd(p.usd); const c = $('.px small', el); c.textContent = pct(p.ch24) + ' 24h'; c.className = cls(p.ch24);
+      $('.lq', el).textContent = p.liquidity ? big(p.liquidity) + ' liquidity' : ''; if (S.hist && S.hist.ser[h.code]) smooth($('canvas', el), S.hist.ser[h.code], HCOL[h.code]); }); }
+  function renderVaults2() { const el = $('#vaults'); if (!el || !HG().length) return; const t = S.tre, live = t && t.live, tot = live ? t.basketUsd || 0 : 0;
+    el.innerHTML = HG().map(h => { const x = live ? (t.holdings || []).find(y => y.mint === h.mint) : null, share = x && tot ? x.usd / tot * 100 : 0;
+      return `<div class="vault" style="--c:${HCOL[h.code]};--f:${share.toFixed(1)}"><div class="vt">${hbadge(h.code)}<div><b>${esc(h.name)}</b><small>${esc(h.symbol)}</small></div></div><div class="vring"><span><b>${share.toFixed(share && share < 10 ? 1 : 0)}%</b><small>${t && t.error ? 'offline' : 'of the treasury'}</small></span></div><div class="vn"><span>held</span><b>${x ? usd(x.usd, 2) : '$0.00'}</b></div></div>`; }).join('');
+    setT('#held', live ? usd(tot, 2) : '$0.00'); setT('#unclaimed', live ? (+t.unclaimedSol).toFixed(3) + ' SOL' : '0 SOL');
+    $('#treWallet').innerHTML = live && t.wallet ? `treasury <a href="https://solscan.io/account/${t.wallet}" target="_blank" rel="noopener" style="color:var(--s1)">${short(t.wallet)} ↗</a>` : 'the treasury wallet shows here once the 1ndex launchpad is open'; }
+  function renderPools2() { const el = $('#poolList'); if (!el || !S.b) return; el.innerHTML = [{ name: 'the S&P 500', symbol: 'SPYx', price: S.b.benchmark && S.b.benchmark.price, tag: 'benchmark' }, ...HG()].map(h => { const p = h.price; return p && p.pool ? `<a class="row" href="https://dexscreener.com/solana/${p.pool}" target="_blank" rel="noopener"><span class="nmx">${esc(h.name)}<i>${esc(h.symbol)} · ${esc(p.dex || '')}${h.tag ? ' · ' + h.tag : ''}</i></span><span>${big(p.liquidity)} <i>liquidity</i></span><span>${big(p.vol24)} <i>24h</i></span><span class="ar">↗</span></a>` : ''; }).join(''); }
+  // 15 days for the S&P and every hedge
+  async function loadHistory2() { const b = S.b; if (!b) return; const want = [['SPY', b.benchmark], ...HG().filter(h => !/^[UTE]$/.test(h.code)).map(h => [h.code, h])], raw = {};
+    for (const [k, m] of want) { if (!m.price || !m.price.pool) continue; try { const o = await gget(`${GT}/pools/${m.price.pool}/ohlcv/hour?aggregate=4&limit=100&currency=usd&token=${m.mint}`); raw[k] = new Map(o.data.attributes.ohlcv_list.map(r => [r[0], +r[4]])); } catch (e) { if (k === 'SPY') return; } await sleep(350); }
+    if (!raw.SPY) return; const from = Date.now() / 1000 - 15 * 86400, ts = [...raw.SPY.keys()].filter(t => t >= from).sort((a, c) => a - c); if (ts.length < 3) return;
+    const ff = m => { let last = null; const seed = m.get([...m.keys()].sort((a, c) => a - c)[0]); return ts.map(t => { if (m.has(t)) last = m.get(t); return last ?? seed; }); };
+    const ser = {}; for (const k of Object.keys(raw)) ser[k] = ff(raw[k]); ['U', 'T', 'E'].forEach(k => ser[k] = ts.map(() => 1));
+    const rel = a => a.map(v => (v / a[0] - 1) * 100), spy = rel(ser.SPY), parts = ['G', 'Q', 'V'].map(k => ser[k] ? rel(ser[k]) : ts.map(() => 0)), ndx = ts.map((_, i) => .25 * (parts[0][i] + parts[1][i] + parts[2][i]));
+    S.hist = { t: ts, spy, ndx, ser }; HW.t0 = 0; HW.w = 0; renderFloats2(); renderHedges(); }
+
+  // ---------------------------------------------------------------- the wallet
+  const WL = { pk: null, p: null, name: '' };
+  const providers = () => [['Phantom', window.phantom && window.phantom.solana], ['Solflare', window.solflare && window.solflare.isSolflare && window.solflare], ['Backpack', window.backpack]].filter(([, p]) => p);
+  function walletUi() { const b = $('#wallet'); if (b) b.textContent = WL.pk ? short(WL.pk) : 'Connect wallet'; renderLaunchBtn(); }
+  async function connectWallet() { if (WL.pk) return WL.pk; const ps = providers(); if (!ps.length) { toast('No Solana wallet found. Open this page in Phantom, Solflare or Backpack.'); throw new Error('no wallet'); }
+    const [name, p] = ps[0]; const r = await p.connect(); WL.pk = ((r && r.publicKey) || p.publicKey).toString(); WL.p = p; WL.name = name; walletUi(); return WL.pk; }
+  function toast(m) { const t = $('#toast'); if (!t) return; t.textContent = m; t.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('on'), 3600); }
+  function walletInit() { const b = $('#wallet'); if (!b) return; b.addEventListener('click', async () => { if (WL.pk) { try { await WL.p.disconnect(); } catch (e) { } WL.pk = null; walletUi(); toast('Wallet disconnected.'); return; } try { await connectWallet(); toast('Connected ' + WL.name + ' · ' + short(WL.pk)); } catch (e) { } });
+    const ps = providers(); if (ps.length && ps[0][1].connect) ps[0][1].connect({ onlyIfTrusted: true }).then(r => { if (r && r.publicKey) { WL.pk = r.publicKey.toString(); WL.p = ps[0][1]; WL.name = ps[0][0]; walletUi(); } }).catch(() => { }); }
+  let web3p = null; const web3 = () => web3p || (web3p = new Promise((ok, no) => { if (window.solanaWeb3) return ok(window.solanaWeb3); const s = document.createElement('script'); s.src = '/assets/web3.min.js'; s.onload = () => ok(window.solanaWeb3); s.onerror = () => no(new Error('could not load the signer')); document.head.append(s); }));
+  const b64 = u => { let s = ''; u.forEach(c => s += String.fromCharCode(c)); return btoa(s); }, unb64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+  async function apiPost(a, body) { const r = await fetch('/api/ndx?a=' + a, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }); const j = await r.json().catch(() => ({ error: 'bad response' })); if (!r.ok || j.error) throw new Error(j.error || r.statusText); return j; }
+
+  // ---------------------------------------------------------------- the launcher
+  const LN = { preset: 'classic', sel: { G: 25, Q: 25, V: 25, U: 25 }, img: '1', busy: false };
+  const hedgeStr = () => Object.entries(LN.sel).map(([c, w]) => c + w).join('');
+  function equalSplit(codes) { const n = codes.length, base = Math.floor(100 / n), o = {}; codes.forEach((c, i) => o[c] = base + (i < 100 - base * n ? 1 : 0)); return o; }
+  function launchInit() { if (!$('#launch')) return; const pr = (S.b && S.b.presets) || [];
+    $('#presets2').innerHTML = pr.map(p => `<button data-p="${p.id}"><b>${esc(p.name)}</b><small>${esc(p.note)}</small></button>`).join('') + `<button data-p="custom"><b>Custom</b><small>Pick up to four below, split evenly.</small></button>`;
+    $$('#presets2 button').forEach(b => b.addEventListener('click', () => { const id = b.dataset.p; LN.preset = id; if (id !== 'custom') { const p = pr.find(x => x.id === id); LN.sel = {}; [...p.h.matchAll(/([A-Z])(\d+)/g)].forEach(m => LN.sel[m[1]] = +m[2]); } cue('pop'); renderLauncher(); }));
+    $('#assets9').innerHTML = HG().map(h => `<button data-c="${h.code}" style="--c:${HCOL[h.code]}">${hbadge(h.code)}<span><b>${esc(h.symbol)}</b><small>${esc(h.name)}</small></span></button>`).join('');
+    $$('#assets9 button').forEach(b => b.addEventListener('click', () => { const c = b.dataset.c, codes = Object.keys(LN.sel); LN.preset = 'custom'; const next = codes.includes(c) ? codes.filter(x => x !== c) : [...codes, c]; if (!next.length) return; if (next.length > 4) { toast('Up to four assets per hedge.'); return; } LN.sel = equalSplit(next); cue('tick'); renderLauncher(); }));
+    $('#imgs').innerHTML = [1, 2, 3, 4, 5, 6].map(i => `<button data-i="${i}" aria-label="image ${i}"><img src="/coins/${i}.png" alt=""></button>`).join('');
+    $$('#imgs button').forEach(b => b.addEventListener('click', () => { LN.img = b.dataset.i; $('#cImg').value = ''; renderLauncher(); }));
+    ['#cName', '#cSym', '#cImg', '#cBuy'].forEach(id => $(id).addEventListener('input', () => { if (id === '#cSym') $(id).value = $(id).value.toUpperCase().replace(/[^A-Z0-9]/g, ''); if (id === '#cImg') LN.img = $('#cImg').value.trim() || '1'; renderLauncher(); }));
+    $('#launchBtn').addEventListener('click', doLaunch); renderLauncher(); }
+  function renderLauncher() { if (!$('#launch') || !HG().length) return;
+    $$('#presets2 button').forEach(b => b.classList.toggle('on', b.dataset.p === LN.preset));
+    const codes = Object.keys(LN.sel); $$('#assets9 button').forEach(b => { const on = codes.includes(b.dataset.c); b.classList.toggle('on', on); b.disabled = !on && codes.length >= 4; });
+    $('#splitbar').innerHTML = codes.map(c => `<i style="flex:${LN.sel[c]};background:${HCOL[c]}"></i>`).join('');
+    $('#splitTxt').textContent = codes.map(c => `${LN.sel[c]}% ${HBY(c) ? HBY(c).name.toLowerCase() : c}`).join(' · ');
+    const custom = /^https:\/\//.test(LN.img); $$('#imgs button').forEach(b => b.classList.toggle('on', !custom && b.dataset.i === LN.img));
+    const name = $('#cName').value.trim() || 'Your coin', sym = $('#cSym').value.trim() || 'TICKER', src = custom ? LN.img : `/coins/${/^[1-6]$/.test(LN.img) ? LN.img : 1}.png`;
+    $('#preview').innerHTML = `<img src="${esc(src)}" alt="" onerror="this.src='/coins/1.png'"><b>${esc(name)}</b><small>$${esc(sym)} · 1ndex</small><div class="hch">${codes.map(c => `<span style="--c:${HCOL[c]}">${LN.sel[c]}% ${esc(HBY(c) ? HBY(c).symbol : c)}</span>`).join('')}</div>`;
+    const step = !codes.length ? 1 : (name === 'Your coin' || sym === 'TICKER') ? 2 : 3; $$('#lsteps span').forEach(s => s.classList.toggle('on', +s.dataset.s === step));
+    renderLaunchBtn(); }
+  function renderLaunchBtn() { const b = $('#launchBtn'); if (!b) return; const open = S.b && S.b.pad; const ps = $('#padState');
+    if (ps) { ps.className = open ? 'open' : 'soon'; ps.innerHTML = `<i></i>${open ? 'launchpad open · ' + short(S.b.pad) : 'launchpad opening soon'}`; }
+    if (LN.busy) return; if (!WL.pk) { b.textContent = 'Connect wallet'; b.disabled = false; return; }
+    b.textContent = open ? 'Launch on Raydium →' : 'Launchpad opening soon'; b.disabled = !open; }
+  async function doLaunch() { const st = (m, c = '') => { const el = $('#lstat'); el.className = 'lstat ' + c; el.innerHTML = m; };
+    if (LN.busy) return; try { if (!WL.pk) { await connectWallet(); return; }
+      if (!(S.b && S.b.pad)) { st('The 1ndex launchpad isn’t open yet. Everything else is ready; this button lights up the moment it is.'); return; }
+      const name = $('#cName').value.trim(), symbol = $('#cSym').value.trim(); if (name.length < 2) throw new Error('Give your coin a name.'); if (symbol.length < 2) throw new Error('Give your coin a ticker.');
+      LN.busy = true; $('#launchBtn').disabled = true; st('building your launch on Raydium LaunchLab…');
+      const r = await apiPost('buildLaunch', { wallet: WL.pk, pad: S.b.pad, name, symbol, image: LN.img, hedge: hedgeStr(), buySol: +$('#cBuy').value || 0 });
+      const W = await web3(); const txs = r.txs.map(t => W.Transaction.from(unb64(t))); st('check your wallet…');
+      const signed = WL.p.signAllTransactions ? await WL.p.signAllTransactions(txs) : [await WL.p.signTransaction(txs[0])]; st('sending…');
+      const s = await apiPost('send', { txs: signed.map(t => b64(t.serialize())) });
+      st(`$${esc(symbol)} is live, with its hedge on-chain.\nmint <b>${esc(r.mint)}</b>\n<a href="https://raydium.io/launchpad/token/?mint=${r.mint}" target="_blank" rel="noopener">open it on Raydium ↗</a> · <a href="https://solscan.io/tx/${s.sigs[0]}" target="_blank" rel="noopener">transaction ↗</a>`, 'ok'); cue('chime'); setTimeout(loadCoins, 4000);
+    } catch (e) { if (e.message !== 'no wallet') st(esc(e.message || String(e)), 'err'); } finally { LN.busy = false; renderLaunchBtn(); } }
+
+  // ---------------------------------------------------------------- coins on 1ndex
+  async function loadCoins() { const g = $('#cgrid'); if (!g) return; try { const c = await api('coins'); setT('#hwCoins', c.open ? String(c.coins.length) : '0');
+      if (!c.open || !c.coins.length) { g.innerHTML = `<div class="empty"><b>${c.open ? 'No coins yet.' : 'The launchpad opens soon.'}</b>${c.open ? 'Be the first coin with a hedge.' : 'The first coins with a hedge show up here, live from Raydium.'}<br><a class="btn btn-go" href="#launch">Launch a coin →</a></div>`; return; }
+      g.innerHTML = c.coins.map(k => `<a class="cc" href="https://raydium.io/launchpad/token/?mint=${k.mint}" target="_blank" rel="noopener"><div class="ct"><img src="${esc(k.image || '/coins/1.png')}" alt="" loading="lazy" onerror="this.src='/coins/1.png'"><div><b>${esc(k.name)}</b><small>$${esc(k.symbol)}</small></div></div><div class="hch">${(k.hedge || []).map(p => `<span style="--c:${HCOL[p.code] || SEG[0]}">${p.w}% ${esc(HBY(p.code) ? HBY(p.code).symbol : p.code)}</span>`).join('') || '<span style="--c:#59639a">no hedge found</span>'}</div><div class="cm"><span>market cap <b>${k.mcapUsd ? big(k.mcapUsd) : '—'}</b></span><span>${k.progress != null ? Math.round(k.progress * 100) + '% to Raydium' : ''}</span></div><div class="cbar"><i style="width:${Math.min(100, (k.progress || 0) * 100).toFixed(1)}%"></i></div></a>`).join('');
+    } catch (e) { g.innerHTML = `<div class="empty"><b>Couldn't read the launchpad.</b>${esc(e.message)}</div>`; } }
   // ---------------------------------------------------------------- reveals, nav, progress
   function reveals() { if (RM) { $$('.rv').forEach(el => el.classList.add('vis')); return; } const o = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('vis'); o.unobserve(e.target); } }), { rootMargin: '0px 0px -8% 0px' }); $$('.rv').forEach(el => o.observe(el)); }
   function onScroll() { const links = $$('.nav-links a[href^="#"]'), y = innerHeight * .35; let on = -1; links.forEach((a, i) => { const s = $(a.getAttribute('href')); if (s && s.getBoundingClientRect().top < y) on = i; }); links.forEach((a, i) => a.classList.toggle('on', i === on));
@@ -488,9 +582,9 @@
     const snd = $('#snd'), sndUi = () => snd.classList.toggle('on', !!(window.MINTSOUND && MINTSOUND.on)); snd.onclick = e => { e.stopPropagation(); window.MINTSOUND && MINTSOUND.toggle(); }; document.addEventListener('mintsound', sndUi); sndUi();
     addEventListener('scroll', onScroll, { passive: true }); onScroll(); addEventListener('resize', () => { drawMarks(); CH.t0 = 0; CH.w = 0; EQ.w = 0; PP.nodes = null; renderDetail(false); });
     requestAnimationFrame(stageFrame); requestAnimationFrame(marqFrame); requestAnimationFrame(cdFrame); requestAnimationFrame(chartFrame); requestAnimationFrame(eqFrame); requestAnimationFrame(pipeFrame); requestAnimationFrame(outroFrame); requestAnimationFrame(winFrame); requestAnimationFrame(donutFrame); requestAnimationFrame(wv3Frame);
-    loadCoin(); loadTreasury(); setInterval(loadBasket, 45000); setInterval(() => { loadCoin(); loadTreasury(); }, 60000);
+    loadTreasury(); loadCoins(); walletInit(); setInterval(loadBasket, 45000); setInterval(() => { loadTreasury(); loadCoins(); }, 60000);
   }
   const fonts = Promise.all([document.fonts.load('700 100px ID'), document.fonts.load('700 30px PX'), document.fonts.load('600 14px JB'), document.fonts.load('500 16px IN')]).catch(() => { });
   const data = loadBasket();
-  Promise.race([Promise.all([fonts, data]), new Promise(r => setTimeout(r, 1200))]).then(() => { start(); intro(() => { }); data.then(loadHistory); });
+  Promise.race([Promise.all([fonts, data]), new Promise(r => setTimeout(r, 1200))]).then(() => { start(); intro(() => { }); data.then(loadHistory2); });
 })();

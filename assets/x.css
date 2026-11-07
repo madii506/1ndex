@@ -609,3 +609,4 @@ html { background: #040716; } body { background: transparent; }
 .v9 { grid-template-columns: repeat(3, minmax(0, 1fr)); } .v9 .vring { width: min(120px, 100%); } .v9 .vring b { font-size: 20px; }
 @media (max-width: 900px) { .v9 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 #wallet { min-width: 140px; }
+.h1 { font-size: clamp(38px, 5.6vw, 82px); line-height: 1.02; }

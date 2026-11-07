@@ -122,7 +122,7 @@
     const skip = () => { if (!handoff && performance.now() - t0 < T_GO - 200) t0 = performance.now() - (T_GO - 200); }; addEventListener('pointerdown', skip, { once: true }); addEventListener('keydown', skip, { once: true });
     function frame(now) {
       const t = now - t0; g.setTransform(DPR, 0, 0, DPR, 0, 0); g.clearRect(0, 0, W, H);
-      if (t > T_GO && !handoff) { const tl = ($('#heroMark') || $('.nav-brand canvas')).getBoundingClientRect(); handoff = { t: now, x: tl.left, y: tl.top, s: (tl.width / 1.06) / L }; document.body.classList.add('handoff'); document.body.classList.remove('intro-on'); }
+      if (t > T_GO && !handoff) { const el = $('#heroMark') || $('.nav-brand canvas'), tl = el && el.getBoundingClientRect(); handoff = tl ? { t: now, x: tl.left, y: tl.top, s: (tl.width / 1.06) / L } : { t: now, x: ox0 + L * .3, y: oy0 - H * .06, s: .4, fade: true }; document.body.classList.add('handoff'); document.body.classList.remove('intro-on'); }
       let veil = .94, X0 = ox0, Y0 = oy0, sc = 1;
       if (handoff) { const k = clamp((now - handoff.t) / 950), e = io(k); veil = .94 * (1 - sm(clamp(k * 1.4))); X0 = ox0 + (handoff.x - ox0) * e; Y0 = oy0 + (handoff.y - oy0) * e; sc = 1 + (handoff.s - 1) * e; if (k >= 1 && !finished) { finished = true; end(); return done(); } }
       g.fillStyle = `rgba(4,7,22,${veil})`; g.fillRect(0, 0, W, H);
@@ -133,8 +133,8 @@
       let all = true;
       for (const q of px) { const k = handoff ? 1 : clamp((t - q.d) / 1150); if (k < 1) all = false; if (k <= 0) continue; const e = io(k), tx = ox + q.x * pp, ty = oy + q.y * pp, ang = q.a + q.sp * (1 - e), rad = q.R * (1 - e) * (1 - e);
         const x = tx + Math.cos(ang) * rad, y = ty + Math.sin(ang) * rad, sz = (pp + .4) * (.5 + .5 * e);
-        if (k >= 1) { g.fillStyle = SH; g.fillRect(tx + pp * .6, ty + pp * .6, pp + .4, pp + .4); }
-        g.globalAlpha = Math.min(1, k * 3); g.fillStyle = q.k < 0 ? LAV : SEG[q.k]; g.fillRect(x, y, sz, sz); g.globalAlpha = 1; }
+        const fa = handoff && handoff.fade ? 1 - clamp((now - handoff.t) / 650) : 1; g.globalAlpha = fa; if (k >= 1) { g.fillStyle = SH; g.fillRect(tx + pp * .6, ty + pp * .6, pp + .4, pp + .4); }
+        g.globalAlpha = Math.min(1, k * 3) * fa; g.fillStyle = q.k < 0 ? LAV : SEG[q.k]; g.fillRect(x, y, sz, sz); g.globalAlpha = 1; }
       if (all && !handoff) once('lock', 'pop'); if (t > 300) once('start', 'tick');
       requestAnimationFrame(frame);
     }

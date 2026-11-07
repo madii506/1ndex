@@ -345,3 +345,50 @@ body { font-variant-numeric: tabular-nums; }
 .cd-stick { grid-template-rows: auto 1fr; padding-bottom: 40px; }
 .soon .cbar { margin-top: 30px; }
 .jar em { font-size: 13px; letter-spacing: .08em; text-transform: uppercase; }
+
+/* ================================================================ v3: one header system, tighter sections, the stock board, why cards */
+.band { padding: 104px 0; }
+.sh { margin-bottom: 40px; } .sh .eyebrow { margin-bottom: 14px; }
+.h2 { font-size: clamp(36px, 5.2vw, 76px); line-height: .98; }
+.outro { padding: 120px 0 110px; } .outro .h2 { font-size: clamp(44px, 7vw, 112px); } .outro .cta { margin-top: 30px; }
+.hero { grid-template-rows: auto 1fr; min-height: max(100svh, 680px); }
+.grab { opacity: 0; transition: opacity .3s; animation: none; } .stage:hover .grab { opacity: .9; }
+@media (pointer: coarse) { .grab { opacity: .9; } .stage.used .grab { opacity: 0; } }
+.end span { font: 600 12.5px var(--sans); letter-spacing: .09em; text-transform: uppercase; }
+
+.board { display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); gap: 12px; }
+.bsum { border: 1px solid var(--line); border-radius: 20px; background: var(--panel); padding: 26px; display: flex; flex-direction: column; }
+.bsum > b { font: 700 clamp(64px, 7vw, 108px)/.9 var(--disp); letter-spacing: -.06em; }
+.bsum > span { margin-top: 12px; font: 500 15px var(--sans); color: var(--mute); }
+.bvs { margin-top: auto; padding-top: 24px; display: grid; gap: 8px; }
+.bvs div { display: flex; justify-content: space-between; align-items: baseline; padding: 12px 14px; border-radius: 12px; background: var(--bg-2); border: 1px solid var(--line); }
+.bvs small { font: 500 13.5px var(--sans); color: var(--mute); } .bvs b { font: 700 22px var(--disp); letter-spacing: -.02em; }
+.tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.tile { --a: 0; --tc: var(--line); position: relative; padding: 14px 14px 12px; border-radius: 14px; border: 1px solid var(--line); background: var(--panel); overflow: hidden; isolation: isolate; text-decoration: none; display: flex; flex-direction: column; gap: 2px; min-height: 116px; transition: transform .2s var(--ease), border-color .2s; }
+.tile::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--tc); opacity: calc(var(--a) * .34); transition: opacity .6s; }
+.tile.dn { --tc: var(--dn); } .tile.up { --tc: var(--up); }
+a.tile:hover { transform: translateY(-2px); border-color: var(--line-2); }
+.tile b { font: 700 17px var(--disp); letter-spacing: -.02em; } .tile small { font: 500 12.5px var(--sans); color: var(--mute); }
+.tile .px { margin-top: auto; font: 600 14px var(--sans); }
+.tile .ch { font: 700 22px var(--disp); letter-spacing: -.03em; }
+.tile.dn .ch { color: var(--dn); } .tile.up .ch { color: var(--up); }
+.tile.flash { animation: tflash 1s ease; } @keyframes tflash { 25% { border-color: var(--text); } }
+@media (max-width: 1000px) { .board { grid-template-columns: 1fr; } .tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } .tile { min-height: 100px; } .bsum { padding: 22px; } }
+
+#crashday { height: 260vh; }
+
+.why3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.wcard { border: 1px solid var(--line); border-radius: 20px; background: var(--panel); padding: 24px; display: flex; flex-direction: column; gap: 14px; min-height: 330px; }
+.wcard .n { font: 700 26px/1 var(--px); background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; width: max-content; }
+.wcard h3 { margin: 0; font: 700 clamp(26px, 2.4vw, 36px)/1.02 var(--disp); letter-spacing: -.04em; }
+.wcard .wv { margin-top: auto; min-height: 120px; display: flex; align-items: flex-end; }
+.wcard .wv canvas { width: 100%; height: 120px; }
+.wcard .wbars div { grid-template-columns: 96px minmax(0, 1fr) 66px; }
+@media (max-width: 900px) { .why3 { grid-template-columns: 1fr; } .wcard { min-height: 0; } }
+
+.ringwrap { max-width: 420px; } .detail { min-height: 420px; }
+.vs { margin-top: 64px; } .vs-say { font-size: clamp(24px, 3vw, 42px); } .chart { height: 360px; }
+.eq { min-height: 320px; } .pipe { height: 380px; } .jar { height: 150px; }
+@media (max-width: 900px) { .pipe { height: 500px; } }
+.tile.dn, .tile.up { color: var(--text); }

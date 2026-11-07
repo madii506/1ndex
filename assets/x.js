@@ -44,8 +44,8 @@
   function drawMarks() { $$('canvas.ringmark').forEach(c => { const wm = c.parentElement.querySelector('.wm'); const css = wm ? Math.round(parseFloat(getComputedStyle(wm).fontSize) * .8) : +c.dataset.size || 22;
     const g = sized(c, css * 1.06, css * 1.06); mark(g, 0, 0, css, { shadow: css > 30 }); }); }
 
-  // ---------------------------------------------------------------- the intro (~5.6 s): candles climb, the market crashes, and a mirror line shows
-  // the other side: the same chart reflected, rising in the index colours. The four tallest mirror candles fold into the ring, the 1 drops in, the name rises.
+  // ---------------------------------------------------------------- the intro (~6 s), three beats and a few big words:
+  // "stocks fall." (arrows rain, the screen shakes) → "the four rise." (four columns climb in the index colours) → the columns burst into pixels that build the ring, the 1 drops in, the name rises
   function intro(done) {
     const cv = $('#intro'); const end = () => { cv.remove(); document.body.classList.remove('intro-on', 'handoff'); };
     if (RM || location.hash || scrollY > 10 || document.hidden) { end(); return done(); }
@@ -53,54 +53,52 @@
     history.scrollRestoration = 'manual'; scrollTo(0, 0);
     const W = innerWidth, H = innerHeight, g = sized(cv, W, H), mob = W < 700;
     const L = Math.min(W * .17, H * .24), F = L / .8; g.font = `700 ${F}px ID`; const ww = g.measureText('1ndex').width, gap = L * .12, lockW = L * 1.06 + gap + ww;
-    const lx = (W - lockW) / 2, ly = H / 2 - L / 2;
-    const r = rng(7), NC = Math.round(clamp(W / 30, 20, 46)), NCR = Math.max(6, Math.round(NC * .22)), cx0 = W * .06, cx1 = W * .94, cw = (cx1 - cx0) / NC, bw = Math.max(4, Math.floor(cw * .64));
-    const ax = Math.round(H * .5), closes = []; let v = 0;
-    for (let i = 0; i < NC; i++) { if (i < NC - NCR) v += .55 + (r() - .5) * 1.5; else v -= 2.6 + r() * 1.6; closes.push(v); }
-    const opens = closes.map((c, i) => i ? closes[i - 1] : c - .6), all = [...closes, ...opens], mn = Math.min(...all), mx = Math.max(...all);
-    const top = H * (mob ? .16 : .1), bot = ax - 16, Y = p => bot - (p - mn) / (mx - mn || 1) * (bot - top), MY = y => 2 * ax - y;
-    const T_UP = 1250, T_CRASH = 1300, T_MIR = 1700, T_FOLD = 3000, T_SLICE = 2950, T_ONE = 4150, T_NAME = 4350, T_TAG = 4700, T_GO = 5400;
-    const ct = i => i < NC - NCR ? i / (NC - NCR) * T_UP : T_CRASH + (i - (NC - NCR)) * 50;
-    const rain = Array.from({ length: mob ? 40 : 80 }, () => ({ x: r() * W, y: -r() * H * .5, s: 6 + Math.floor(r() * 3) * 3, v: 3 + r() * 4 }));
-    const rise = Array.from({ length: mob ? 30 : 60 }, () => ({ x: r() * W, y: H + r() * H * .4, s: 6 + Math.floor(r() * 3) * 3, v: 1.5 + r() * 2.5, c: SEG[Math.floor(r() * 4)] }));
-    const src = [0, 1, 2, 3].map(k => { const i = NC - 4 + k, x = cx0 + i * cw + cw / 2, y = MY((Y(opens[i]) + Y(closes[i])) / 2); return [x, y]; });
+    const lx = (W - lockW) / 2, ly = H / 2 - L / 2, r = rng(5);
+    const fitF = (txt, s) => { g.font = `700 ${s}px ID`; const w = g.measureText(txt).width; return w > W * .88 ? s * W * .88 / w : s; };
+    const FS1 = fitF('stocks fall.', Math.min(W * .13, H * .2, 180)), FS2 = fitF('the four rise.', Math.min(W * .12, H * .19, 170));
+    const rain = Array.from({ length: mob ? 46 : 96 }, () => ({ x: r() * W, y: -r() * H, s: 7 + Math.floor(r() * 3) * 4, v: 4 + r() * 6 }));
+    const rise = Array.from({ length: mob ? 30 : 64 }, () => ({ x: r() * W, y: H + r() * H * .5, s: 6 + Math.floor(r() * 3) * 3, v: 2 + r() * 3, c: SEG[Math.floor(r() * 4)] }));
+    const cs = Math.max(6, Math.round(Math.min(W, H) / 64)), colW = cs * (mob ? 4 : 5), colX = k => W * (.2 + k * .2) - colW / 2, colH = H * .4, colB = H * .93;
+    const T1 = 120, T_HIT = 640, T1_OUT = 1700, T2 = 1900, T2_OUT = 3250, T_SLICE = 3300, T_ONE = 4200, T_NAME = 4400, T_GO = 5250;
     let t0 = performance.now(), handoff = null, finished = false; const said = {}; const once = (k, n) => { if (!said[k]) { said[k] = 1; cue(n); } };
-    const skip = () => { if (!handoff && performance.now() - t0 < 5000) t0 = performance.now() - 5000; }; addEventListener('pointerdown', skip, { once: true }); addEventListener('keydown', skip, { once: true });
+    const skip = () => { if (!handoff && performance.now() - t0 < 4900) t0 = performance.now() - 4900; }; addEventListener('pointerdown', skip, { once: true }); addEventListener('keydown', skip, { once: true });
+    const word = (txt, x, y, fs, fill, a) => { if (a <= 0) return; g.globalAlpha = a; g.font = `700 ${fs}px ID`; g.textBaseline = 'middle'; g.textAlign = 'left'; g.fillStyle = SH2; g.fillText(txt, x + fs * .04, y + fs * .04); g.fillStyle = fill; g.fillText(txt, x, y); g.globalAlpha = 1; };
     function frame(now) {
       const t = now - t0; g.setTransform(DPR, 0, 0, DPR, 0, 0); g.clearRect(0, 0, W, H);
       if (t > T_GO && !handoff) { const tl = $('#heroMark').getBoundingClientRect(); handoff = { t: now, x: tl.left, y: tl.top, s: (tl.width / 1.06) / L }; document.body.classList.add('handoff'); document.body.classList.remove('intro-on'); }
       let bgA = 1, X0 = lx, Y0 = ly, sc = 1;
       if (handoff) { const k = clamp((now - handoff.t) / 1000), e = io(k); bgA = 1 - sm(clamp((k - .3) / .7)); X0 = lx + (handoff.x - lx) * e; Y0 = ly + (handoff.y - ly) * e; sc = 1 + (handoff.s - 1) * e; if (k >= 1 && !finished) { finished = true; end(); return done(); } }
       g.globalAlpha = bgA; g.fillStyle = NAVY; g.fillRect(0, 0, W, H);
-      const kc = clamp((t - T_CRASH) / 520), shake = t > T_CRASH && kc < 1 ? (1 - kc) * 9 : 0; g.save(); g.translate((r() - .5) * shake, (r() - .5) * shake);
-      if (t > T_CRASH && kc < 1) { g.fillStyle = `rgba(255,90,122,${.13 * (1 - kc)})`; g.fillRect(0, 0, W, H); }
-      const fold = sm(clamp((t - T_FOLD) / 550));
-      if (!handoff && fold < 1) {
-        const A0 = bgA * (1 - fold); g.globalAlpha = A0; const red = t > T_CRASH;
-        // the mirror line
-        const ka = out(clamp((t - T_CRASH - 120) / 650)); if (ka > 0) { const half = W / 2 * ka; g.fillStyle = 'rgba(232,236,255,.4)'; g.fillRect(W / 2 - half, ax, half * 2, 1); }
-        // candles and their reflection
-        for (let i = 0; i < NC; i++) { const ti = ct(i); if (t < ti) continue; const k = out(clamp((t - ti) / 160)), o = opens[i], c = o + (closes[i] - o) * k, x = cx0 + i * cw + (cw - bw) / 2;
-          const ya = Y(Math.max(o, c)), yb = Y(Math.min(o, c)), h = Math.max(3, yb - ya), col = red ? DN : closes[i] >= o ? UP : '#2a9d78';
-          g.globalAlpha = A0; g.fillStyle = 'rgba(0,0,0,.45)'; g.fillRect(x + 4, ya + 4, bw, h); g.fillStyle = col; g.fillRect(x, ya, bw, h); g.fillRect(x + bw / 2 - 1, ya - 5, 2, h + 10);
-          const km = clamp((t - T_MIR - (i / NC) * 650) / 260); if (km > 0) { const mya = MY(yb), q = Math.min(3, Math.floor(i / NC * 4)); g.globalAlpha = A0 * km;
-            g.fillStyle = SH; g.fillRect(x + 4, mya + 4, bw, h); g.fillStyle = SEG[q]; g.fillRect(x, mya, bw, h); g.fillRect(x + bw / 2 - 1, mya - 5, 2, h + 10); } }
-        g.globalAlpha = A0; if (t > 200 && t < T_UP) { if (Math.floor(t / 180) !== frame.tk) { frame.tk = Math.floor(t / 180); cue('tick'); } }
-        if (red) once('crash', 'thud'); if (t > T_MIR) once('mirror', 'chime');
-        // ▼ rain above the line, ▲ rising below it
-        if (red) { const kr = clamp((t - T_CRASH) / 1800); g.globalAlpha = A0 * (1 - kr) * .8; for (const d of rain) { d.y += d.v; if (d.y < ax - 10) arrow(g, d.x, d.y, d.s, DN, false); } }
-        if (t > T_MIR) { g.globalAlpha = A0 * .7; for (const d of rise) { d.y -= d.v; if (d.y > ax + 10) arrow(g, d.x, d.y, d.s, d.c, true); } }
+      const kh = clamp((t - T_HIT) / 480), shake = t > T_HIT && kh < 1 ? (1 - kh) * 10 : 0; g.save(); g.translate((r() - .5) * shake, (r() - .5) * shake);
+      g.strokeStyle = 'rgba(154,166,217,.05)'; g.lineWidth = 1; for (let x = 0; x < W; x += 48) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, H); g.stroke(); } for (let y = 0; y < H; y += 48) { g.beginPath(); g.moveTo(0, y); g.lineTo(W, y); g.stroke(); }
+      if (t > T_HIT && kh < 1) { g.fillStyle = `rgba(255,90,122,${.16 * (1 - kh)})`; g.fillRect(0, 0, W, H); }
+      if (!handoff) {
+        // beat 1: stocks fall.
+        const a1 = 1 - sm(clamp((t - T1_OUT) / 420));
+        if (a1 > 0) { g.globalAlpha = .75 * a1 * bgA; for (const d of rain) { d.y += d.v * (t > T_HIT ? 1.6 : 1); if (d.y > H + 20) d.y = -20; arrow(g, d.x, d.y, d.s, DN, false); } g.globalAlpha = 1;
+          g.font = `700 ${FS1}px ID`; const w1 = g.measureText('stocks ').width, w2 = g.measureText('fall.').width, x0 = (W - w1 - w2) / 2, ok = sm(clamp((t - T1_OUT) / 420)) * 70;
+          const k1 = out(clamp((t - T1) / 420)), k2 = clamp((t - T1 - 300) / 360), bounce = k2 < 1 ? (1 - out(k2)) : 0;
+          word('stocks', x0, H / 2 - (1 - k1) * 60 + ok, FS1, LAV, k1 * a1); word('fall.', x0 + w1, H / 2 - bounce * H * .35 + ok + (k2 >= 1 ? 0 : 0), FS1, DN, Math.min(1, k2 * 3) * a1);
+          if (t > T1 + 120) once('w1', 'tick'); if (t > T_HIT) once('hit', 'thud'); }
+        // beat 2: the four rise.
+        if (t > T2 - 100 && t < T_SLICE + 60) { const ac = 1 - clamp((t - T_SLICE) / 60);
+          g.globalAlpha = .7 * ac; for (const d of rise) { d.y -= d.v; if (d.y < -20) d.y = H + 20; arrow(g, d.x, d.y, d.s, d.c, true); } g.globalAlpha = ac;
+          for (let k = 0; k < 4; k++) { const kk = out(clamp((t - T2 - k * 110) / 800)), n = Math.floor(colH * kk / (cs + 3)), x = colX(k);
+            for (let j = 0; j < n; j++) { const y = colB - (j + 1) * (cs + 3); g.fillStyle = SH; g.fillRect(x + 4, y + 4, colW, cs); g.fillStyle = SEG[k]; g.fillRect(x, y, colW, cs); } }
+          g.globalAlpha = 1; once('w2', 'chime'); }
+        if (t > T2 && t < T2_OUT + 420) { const k = out(clamp((t - T2) / 520)), ko = sm(clamp((t - T2_OUT) / 400)), y = H * .3 + (1 - k) * 70 - ko * 50;
+          g.font = `700 ${FS2}px ID`; const w1 = g.measureText('the four ').width, w2 = g.measureText('rise.').width, x0 = (W - w1 - w2) / 2;
+          word('the four', x0, y, FS2, LAV, k * (1 - ko)); word('rise.', x0 + w1, y, FS2, grad(g, x0 + w1, 0, x0 + w1 + w2, 0), k * (1 - ko)); }
       }
       g.restore(); g.globalAlpha = 1;
-      // the four tallest mirror candles fold into the ring's slices
+      // beat 3: the columns burst into pixels that build the ring
       if (t > T_SLICE || handoff) {
         const size = L * sc, p = size / N, pulse = handoff ? 0 : Math.max(0, 1 - Math.abs(t - T_ONE - 250) / 250) * .06, S0 = 1 + pulse;
-        const ox = (handoff ? X0 : lx) - size * (S0 - 1) / 2, oy = (handoff ? Y0 : ly) - size * (S0 - 1) / 2, pp = p * S0, cx = ox + size * S0 / 2, cy = oy + size * S0 / 2;
-        if (!frame.px) frame.px = CELLS.filter(c => c[2] >= 0).map(([x, y, k]) => { const i = k === 3 || r() < .5 ? NC - NCR + Math.floor(r() * NCR) : Math.floor(r() * NC), mir = r() < .7, bx = cx0 + i * cw + (cw - bw) / 2 + r() * bw;
-          const ya = Y(Math.max(opens[i], closes[i])), yb = Y(Math.min(opens[i], closes[i])), by = ya + r() * Math.max(3, yb - ya); return { x, y, k, sx: bx, sy: mir ? MY(by) : by, c0: mir ? SEG[Math.min(3, Math.floor(i / NC * 4))] : DN, d: r() * 380 }; });
-        for (const q of frame.px) { const kk = handoff ? 1 : io(clamp((t - T_SLICE - q.d) / 760)), tx = ox + q.x * pp, ty = oy + q.y * pp, x = q.sx + (tx - q.sx) * kk, y = q.sy + (ty - q.sy) * kk + Math.sin(kk * Math.PI) * -40 * (q.k % 2 ? 1 : -1), sz = (pp + .4) * (.55 + .45 * kk);
-          if (kk >= 1) { g.fillStyle = SH; g.fillRect(tx + pp, ty + pp, pp + .4, pp + .4); } g.fillStyle = kk < .6 ? q.c0 : SEG[q.k]; g.fillRect(x, y, sz, sz); }
-        if (!handoff && t > T_SLICE + 380 + 760) once('lock', 'pop');
+        const ox = (handoff ? X0 : lx) - size * (S0 - 1) / 2, oy = (handoff ? Y0 : ly) - size * (S0 - 1) / 2, pp = p * S0;
+        if (!frame.px) frame.px = CELLS.filter(c => c[2] >= 0).map(([x, y, k]) => ({ x, y, k, sx: colX(k) + r() * colW, sy: colB - r() * colH, d: r() * 320 }));
+        for (const q of frame.px) { const kk = handoff ? 1 : io(clamp((t - T_SLICE - q.d) / 720)), tx = ox + q.x * pp, ty = oy + q.y * pp, x = q.sx + (tx - q.sx) * kk, y = q.sy + (ty - q.sy) * kk - Math.sin(kk * Math.PI) * 60, sz = (pp + .4) * (.7 + .3 * kk);
+          if (kk >= 1) { g.fillStyle = SH; g.fillRect(tx + pp, ty + pp, pp + .4, pp + .4); } g.fillStyle = SEG[q.k]; g.fillRect(x, y, sz, sz); }
+        if (!handoff && t > T_SLICE + 320 + 720) once('lock', 'pop');
         const k1 = handoff ? 1 : out(clamp((t - T_ONE) / 420)); if (k1 > 0) { const dy = (1 - k1) * -size * .9; g.globalAlpha = Math.min(1, k1 * 2);
           g.fillStyle = SH; for (const [x, y, s] of CELLS) if (s < 0) g.fillRect(ox + (x + 1) * pp, oy + (y + 1) * pp + dy, pp + .4, pp + .4);
           g.fillStyle = LAV; for (const [x, y, s] of CELLS) if (s < 0) g.fillRect(ox + x * pp, oy + y * pp + dy, pp + .4, pp + .4); g.globalAlpha = 1; if (k1 >= 1) once('one', 'tick'); }
@@ -114,15 +112,26 @@
 
   // ---------------------------------------------------------------- live prices
   async function loadBasket() { try { S.b = await api('basket'); onBasket(); } catch (e) { if (!S.b) { $('#tape').innerHTML = '<span>prices are busy right now, retrying</span>'; setT('#liveTxt', 'prices are busy, retrying…'); setT('#say', 'prices are busy right now. the seesaw moves as soon as they answer.'); } } }
-  function onBasket() { renderTape(); renderLive(); renderPicker(); renderPools(); stageData(); renderVaults(); }
-  function renderTape() { const b = S.b, spy = b.benchmark && b.benchmark.price, items = [];
+  function onBasket() { renderTape(); renderLive(); renderBoard(); renderPicker(); renderPools(); stageData(); renderVaults(); }
+  function renderTape() { if (!$('#tape')) return; const b = S.b, spy = b.benchmark && b.benchmark.price, items = [];
     if (spy) items.push(`S&amp;P 500 (SPYx) <em>${usd(spy.usd)}</em> <span class="${cls(spy.ch24)}">${pct(spy.ch24)}</span>`);
     M().forEach(m => { const p = m.price; if (p) items.push(`${esc(NAMES[m.symbol] || m.symbol)} (${esc(m.ticker)}) <em>${usd(p.usd)}</em> <span class="${cls(p.ch24)}">${pct(p.ch24)}</span>`); });
     if (b.ch24 != null) items.push(`the 1ndex four <span class="${cls(b.ch24)}">${pct(b.ch24)}</span>`); if (b.sol) items.push(`SOL <em>${usd(b.sol.usd)}</em>`);
     const one = items.map(x => `<span>${x}</span>`).join(''); $('#tape').innerHTML = one + one; }
   function renderLive() { const spy = S.b.benchmark && S.b.benchmark.price; if (!spy) return; const wl = $('#whyLive'); if (wl && S.b.sol) wl.innerHTML = `right now, over 24h: the S&amp;P 500 <span class="${cls(spy.ch24)}">${pct(spy.ch24)}</span> · SOL <span class="${cls(S.b.sol.ch24)}">${pct(S.b.sol.ch24)}</span>`; const red = spy.ch24 < 0, el = $('#live'); el.classList.toggle('red', red); el.classList.toggle('green', !red);
-    $('#liveTxt').innerHTML = `<b>live</b> · ${new Date().toISOString().slice(11, 16)} UTC · stocks ${red ? 'down' : 'up'} 24h`; }
+    $('#liveTxt').innerHTML = `<b>live</b> · stocks ${red ? 'down' : 'up'} 24h`; }
 
+
+  // ---------------------------------------------------------------- the stock market, live: real stocks on Solana (tokenized), red and green
+  function renderBoard() { const el = $('#tiles'); if (!el || !S.b) return; const st = (S.b.stocks || []).filter(s => s.price && s.price.ch24 != null);
+    if (!st.length) { el.innerHTML = '<div class="empty">stock prices are busy, retrying</div>'; return; }
+    const prev = S.prevSt || {};
+    el.innerHTML = st.map(s => { const c = s.price.ch24, a = clamp(Math.abs(c) / 2.2), fl = prev[s.symbol] != null && prev[s.symbol] !== s.price.usd ? ' flash' : '', tag = s.price.pool ? 'a' : 'div', href = s.price.pool ? ` href="https://dexscreener.com/solana/${s.price.pool}" target="_blank" rel="noopener"` : '';
+      return `<${tag} class="tile ${c < 0 ? 'dn' : 'up'}${fl}" style="--a:${a.toFixed(2)}"${href}><b>${esc(s.symbol)}</b><small>${esc(s.name)}</small><span class="px">${usd(s.price.usd)}</span><span class="ch">${spct(c)}</span></${tag}>`; }).join('');
+    S.prevSt = Object.fromEntries(st.map(s => [s.symbol, s.price.usd]));
+    const dn = st.filter(s => s.price.ch24 < 0).length, avg = st.reduce((a, s) => a + s.price.ch24, 0) / st.length;
+    setT('#bsN', `${dn}/${st.length}`, dn > st.length / 2 ? 'dn' : 'up'); setT('#bsT', dn > st.length / 2 ? 'stocks down over 24h' : dn ? 'stocks mostly up over 24h' : 'every stock here is up over 24h');
+    setT('#bsA', spct(avg), cls(avg)); if (S.b.ch24 != null) setT('#bsF', spct(S.b.ch24), S.b.ch24 >= 0 ? 'g' : 'dn'); }
   // ---------------------------------------------------------------- the hero: a seesaw with stocks on one end and the four on the other
   const ST = { a: 0, v: 0, live: null, sim: null, drag: null, anim: null, parts: [], lt0: 0, shake: 0, lastInt: null };
   const ruleFour = s => { const x = s / 100, nq = x * 1.25, sq = Math.max(-1, -3 * nq), vx = Math.max(-.9, -3.5 * x), q = 25; return (q * 2 + q * (1 + sq) + q * (1 + vx)) - 100; };
@@ -130,12 +139,12 @@
   function stageData() { const spy = S.b.benchmark && S.b.benchmark.price; if (!spy || S.b.ch24 == null) return; ST.live = { spy: spy.ch24, four: S.b.ch24, sim: false }; stageLabels(); }
   function stageLabels() { const c = cur(); if (!c) return; const sp = $('#endSpy');
     sp.classList.toggle('green', c.spy >= 0);
-    setT('#eSpyK', c.sim ? 'if the S&P 500 moved' : 'the S&P 500 · 24h'); setT('#eNdxK', c.sim ? 'the four, by rules of thumb' : 'the 1ndex four · 24h');
+    setT('#eSpyK', c.sim ? 'if the S&P moved' : 'S&P 500'); setT('#eNdxK', c.sim ? 'the four, rule of thumb' : 'the four');
     const d = c.four - c.spy, say = $('#say'); if (!say) return;
     if (c.sim) say.innerHTML = `If the S&amp;P 500 moved ${spct(c.spy)} in a day, simple rules of thumb put the four near <b>${spct(c.four)}</b>. ${COARSE ? '' : 'It snaps back to live on its own.'}`;
     else say.innerHTML = c.spy < 0 ? (d >= 0 ? `Stocks are down over 24h. <b>The four are ${d.toFixed(2)} points ahead.</b>` : `Stocks are down over 24h, and the four are ${(-d).toFixed(2)} points behind so far.`) : (d >= 0 ? `Stocks are up over 24h, and <b>the four are still ${d.toFixed(2)} points ahead.</b>` : `Stocks are up over 24h. <b>A hedge costs a little on days like this.</b>`); }
   function stageInit() {
-    const st = $('#stage'); watch(st, 'stage'); if (COARSE) setT('#grab', 'tap to crash the S&P');
+    const st = $('#stage'); watch(st, 'stage'); if (COARSE) setT('#grab', 'tap ↓');
     st.addEventListener('pointerdown', e => { if (e.pointerType === 'touch') return; ST.anim = null; ST.drag = { y: e.clientY, s0: ST.sim ?? (ST.live ? ST.live.spy : 0) }; st.setPointerCapture(e.pointerId); st.classList.add('drag', 'used'); cue('tick'); });
     st.addEventListener('pointermove', e => { if (!ST.drag) return; ST.sim = clamp(Math.round(ST.drag.s0 - (e.clientY - ST.drag.y) / 13), -15, 5); const i = ST.sim; if (i !== ST.lastInt) { ST.lastInt = i; cue('tick'); } stageLabels(); });
     const up = () => { if (!ST.drag) return; ST.drag = null; st.classList.remove('drag'); setTimeout(() => { if (!ST.drag) { ST.sim = null; stageLabels(); cue('pop'); } }, 650); };
@@ -153,13 +162,13 @@
     ST.v += (target - ST.a) * .055; ST.v *= .86; ST.a += ST.v; if (RM) ST.a = target;
     g.clearRect(0, 0, W, H); ST.shake *= .9; g.save(); if (ST.shake > .3) g.translate((Math.random() - .5) * ST.shake, (Math.random() - .5) * ST.shake);
     // 15 days behind it, faint: the S&P (coral) and the four
-    const Hs = S.hist; if (Hs) { if (!ST.lt0) ST.lt0 = now; const k = RM ? 1 : out(clamp((now - ST.lt0) / 2200)), all = [...Hs.spy, ...Hs.ndx], mn = Math.min(...all), mx = Math.max(...all), n = Math.max(2, Math.floor(k * Hs.t.length));
+    const Hs = null; if (Hs) { if (!ST.lt0) ST.lt0 = now; const k = RM ? 1 : out(clamp((now - ST.lt0) / 2200)), all = [...Hs.spy, ...Hs.ndx], mn = Math.min(...all), mx = Math.max(...all), n = Math.max(2, Math.floor(k * Hs.t.length));
       const X = i => i / (Hs.t.length - 1) * W, Y = v => H * .78 - (v - mn) / (mx - mn || 1) * H * .62;
       g.globalAlpha = .13; g.lineWidth = 3; g.lineJoin = 'round';
       [[Hs.spy, DN], [Hs.ndx, grad(g, 0, 0, W, 0)]].forEach(([a, col]) => { g.strokeStyle = col; g.beginPath(); for (let i = 0; i < n; i++) i ? g.lineTo(X(i), Y(a[i])) : g.moveTo(X(i), Y(a[i])); g.stroke(); });
       g.globalAlpha = 1; }
     // weather: each side rains or rises with its own live (or dragged) move
-    if (cv && !RM) { const max = mob ? 34 : 70, sides = [[cv.spy, 0], [cv.four, 1]];
+    if (cv && !RM) { const max = mob ? 22 : 40, sides = [[cv.spy, 0], [cv.four, 1]];
       for (const [val, side] of sides) { const inten = clamp(Math.abs(val) / 3, .12, 1), upw = val >= 0;
         if (ST.parts.filter(p => p.side === side).length < max * inten && Math.random() < .5 * inten + .1) {
           const x0 = side ? W / 2 + 30 : 0, x1 = side ? W : W / 2 - 30, s = (mob ? 6 : 8) + Math.floor(Math.random() * 3) * 3;
@@ -193,8 +202,8 @@
 
   // ---------------------------------------------------------------- the marquee: two rows, opposite ways, faster while you scroll
   const MQ = { a: 0, b: 0, vy: 0, last: scrollY };
-  function marqInit() { const ua = '<span>when stocks fall ▼</span><span class="o">when stocks fall ▼</span>', ub = '<span>the four rise ▲</span><span class="o">the four rise ▲</span>'; $('#mA').innerHTML = ua.repeat(6); $('#mB').innerHTML = ub.repeat(6); watch($('.marq'), 'marq'); }
-  function marqFrame() { requestAnimationFrame(marqFrame); const dy = scrollY - MQ.last; MQ.last = scrollY; MQ.vy = MQ.vy * .9 + Math.abs(dy) * .1; if (!vis.marq || document.hidden || RM) return;
+  function marqInit() { if (!$('#mA')) return; const ua = '<span>when stocks fall ▼</span><span class="o">when stocks fall ▼</span>', ub = '<span>the four rise ▲</span><span class="o">the four rise ▲</span>'; $('#mA').innerHTML = ua.repeat(6); $('#mB').innerHTML = ub.repeat(6); watch($('.marq'), 'marq'); }
+  function marqFrame() { if (!$('#mA')) return; requestAnimationFrame(marqFrame); const dy = scrollY - MQ.last; MQ.last = scrollY; MQ.vy = MQ.vy * .9 + Math.abs(dy) * .1; if (!vis.marq || document.hidden || RM) return;
     const sp = .6 + Math.min(14, MQ.vy * .5), a = $('#mA'), b = $('#mB'), wa = a.scrollWidth / 2, wb = b.scrollWidth / 2;
     MQ.a = (MQ.a - sp) % wa; MQ.b = (MQ.b + sp) % wb; if (MQ.b > 0) MQ.b -= wb; a.style.transform = `translate3d(${MQ.a}px,0,0)`; b.style.transform = `translate3d(${MQ.b}px,0,0)`; }
 

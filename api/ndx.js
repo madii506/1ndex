@@ -1,6 +1,7 @@
-// 1ndex API: the coin that hedges against the stock market. Its fees buy gold, the short Nasdaq, VIX and dollars.
-// GET  a=basket (the four and the S&P 500, live prices)
-//      a=treasury (what the index treasury holds) · a=coin ($1NDEX on its LaunchLab curve) · a=pad&admin= · a=m (token metadata)
+// 1ndex API: launch a coin whose trading fee buys a hedge against the stock market.
+// Every coin launches on the 1ndex launchpad on Raydium LaunchLab; its 1% fee goes to the shared hedge treasury, which buys the hedge the creator picked.
+// GET  a=basket (hedges, stocks and the S&P 500, live prices) · a=coins (coins launched on 1ndex) · a=treasury · a=activity
+//      a=pad&admin= · a=t (token metadata: the hedge is part of the link, so it's on-chain) · a=m (old metadata)
 // POST a=buildPad · a=buildLaunch · a=claim · a=send   (every transaction is signed in the visitor's own wallet)
 const { Connection, PublicKey, Keypair, SystemProgram, Transaction } = require('@solana/web3.js');
 const BN = require('bn.js');
@@ -34,7 +35,8 @@ const getJ = async (url, ms = 8000) => { const r = await fetch(url, { signal: Ab
 
 // ---------------------------------------------------------------- the basket: the members, their live prices, their launchpads' activity
 async function prices(mints) {
-  const j = await getJ(`https://api.dexscreener.com/tokens/v1/solana/${mints.join(',')}`);
+  const parts = []; for (let i = 0; i < mints.length; i += 30) parts.push(mints.slice(i, i + 30));
+  const j = (await Promise.all(parts.map(x => getJ(`https://api.dexscreener.com/tokens/v1/solana/${x.join(',')}`)))).flat();
   const o = {};
   for (const m of mints) {
     const ps = (Array.isArray(j) ? j : []).filter(p => p.baseToken && p.baseToken.address === m).sort((a, b) => ((b.liquidity || {}).usd || 0) - ((a.liquidity || {}).usd || 0));
@@ -44,10 +46,10 @@ async function prices(mints) {
 }
 async function basket() {
   const SOL = 'So11111111111111111111111111111111111111112';
-  const ST = CFG.stocks || [], P = await prices([...new Set([...CFG.members.map(m => m.mint), CFG.benchmark.mint, SOL, ...ST.map(s => s.mint)])]);
+  const ST = CFG.stocks || [], HG = CFG.hedges || [], P = await prices([...new Set([...HG.map(h => h.mint), ...CFG.members.map(m => m.mint), CFG.benchmark.mint, SOL, ...ST.map(s => s.mint)])]);
   const w = 1 / CFG.members.length, members = CFG.members.map(m => ({ ...m, weight: w, price: P[m.mint] || null }));
   const ch = members.map(m => m.symbol === 'USD' ? 0 : m.price && m.price.ch24); const ch24 = ch.every(x => x != null) ? ch.reduce((a, x) => a + w * x, 0) : null;
-  return { at: Date.now(), rule: CFG.rule, ch24, members, benchmark: { ...CFG.benchmark, price: P[CFG.benchmark.mint] || null }, sol: P[SOL] || null, stocks: ST.map(s => ({ ...s, price: P[s.mint] || null })) };
+  return { at: Date.now(), rule: CFG.rule, ch24, members, benchmark: { ...CFG.benchmark, price: P[CFG.benchmark.mint] || null }, sol: P[SOL] || null, stocks: ST.map(s => ({ ...s, price: P[s.mint] || null })), hedges: HG.map(h => ({ ...h, price: P[h.mint] || null })), presets: CFG.presets || [], pad: PIN.pad || null };
 }
 
 // ---------------------------------------------------------------- the coin and its treasury (pinned once $1NDEX exists)
@@ -66,8 +68,8 @@ async function treasury(forWallet) {
   const owner = new PublicKey(who);
   const [bal, t1, t2] = await Promise.all([conn.getBalance(owner), conn.getParsedTokenAccountsByOwner(owner, { programId: new PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA') }), conn.getParsedTokenAccountsByOwner(owner, { programId: new PublicKey('TokenzQdBNbLqP5VEhdkAS6EPFLuK7RcNNL4yuV5Tc6') }).catch(() => ({ value: [] }))]);
   const held = {}; for (const a of [...t1.value, ...t2.value]) { const i = a.account.data.parsed.info; held[i.mint] = (held[i.mint] || 0) + (+i.tokenAmount.uiAmount || 0); }
-  const px = await prices(CFG.members.map(m => m.mint)).catch(() => ({}));
-  const holdings = CFG.members.map(m => ({ symbol: m.symbol, mint: m.mint, amount: held[m.mint] || 0, usd: (held[m.mint] || 0) * ((px[m.mint] || {}).usd || 0) }));
+  const HG = CFG.hedges || CFG.members, px = await prices(HG.map(m => m.mint)).catch(() => ({}));
+  const holdings = HG.map(m => ({ code: m.code, symbol: m.symbol, mint: m.mint, amount: held[m.mint] || 0, usd: (held[m.mint] || 0) * ((px[m.mint] || {}).usd || 0) }));
   let unclaimedSol = 0; if (PIN.pad) { try { const v = await conn.getAccountInfo(vaultOf(new PublicKey(PIN.pad))); if (v && v.data.length >= 72) unclaimedSol = Number(v.data.readBigUInt64LE(64)) / 1e9; } catch {} }
   return { live: true, wallet: who, sol: bal / 1e9, unclaimedSol, holdings, basketUsd: holdings.reduce((a, h) => a + h.usd, 0) };
 }
@@ -79,7 +81,7 @@ async function activity() {
   const txs = await Promise.all(sigs.slice(0, 15).map(s => conn.getTransaction(s.signature, { maxSupportedTransactionVersion: 0 }).catch(() => null)));
   const JUP6 = 'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4';
   const items = sigs.slice(0, 15).map((s, i) => { const tx = txs[i]; const keys = tx ? (tx.transaction.message.staticAccountKeys || tx.transaction.message.accountKeys || []).map(k => k.toBase58()) : [];
-    const kind = keys.includes(JUP6) ? 'bought for the index' : keys.includes(PROGRAM.toBase58()) ? 'LaunchLab: claim or launchpad' : 'other';
+    const kind = keys.includes(JUP6) ? 'bought a hedge' : keys.includes(PROGRAM.toBase58()) ? 'LaunchLab: claim or launchpad' : 'other';
     return { sig: s.signature, time: s.blockTime, kind }; });
   return { items };
 }
@@ -131,14 +133,24 @@ async function buildPad(req) {
   const r = await finish(txsOf(made), wallet, [], () => tagIx(wallet), !!b.simulate);
   return { pad: id.toBase58(), ...r };
 }
+const HCODES = Object.fromEntries((CFG.hedges || []).map(h => [h.code, h]));
+// a hedge is written like G25Q25V25U25: up to four assets by code, whole-number weights that add up to 100
+function parseHedge(h) { const m = String(h || '').match(/^([A-Z]\d{1,3}){1,4}$/); if (!m) throw new Error('pick a hedge');
+  const parts = [...String(h).matchAll(/([A-Z])(\d{1,3})/g)].map(x => ({ code: x[1], w: +x[2] }));
+  if (parts.some(p => !HCODES[p.code] || p.w < 1)) throw new Error('unknown hedge asset'); if (new Set(parts.map(p => p.code)).size !== parts.length) throw new Error('each asset once');
+  if (parts.reduce((a, p) => a + p.w, 0) !== 100) throw new Error('hedge weights must add up to 100'); return parts; }
+const hedgeText = parts => parts.map(p => `${p.w}% ${HCODES[p.code].name} (${HCODES[p.code].symbol})`).join(', ');
 async function buildLaunch(req) {
-  const b = await body(req); const wallet = pk(b.wallet, 'connect a wallet first'), padId = pk(b.pad || padIdOf(wallet).toBase58(), 'make the launchpad first');
-  const padAcc = await conn.getAccountInfo(padId); if (!padAcc || !padAcc.owner.equals(PROGRAM)) throw new Error('make the 1ndex launchpad first');
-  const { cfg } = await chain(); const raise = +b.raiseSol || 85; if (raise < +cfg.minFundRaisingB.toString() / 1e9) throw new Error('raise too small for LaunchLab');
-  const name = CFG.name, symbol = CFG.symbol, image = clean(b.image || host(req) + '/assets/icon.png', 300);
-  const meta = { n: name, s: symbol, i: image, d: 'the coin that hedges against the stock market.' };
-  const uri = host(req) + '/api/ndx?a=m&d=' + b64u(JSON.stringify(meta)); if (uri.length > 200) throw new Error('metadata link too long');
-  const buySol = Math.max(0, +b.buySol || 0); if (buySol > raise) throw new Error('the first buy is bigger than the whole curve');
+  const b = await body(req); const wallet = pk(b.wallet, 'connect a wallet first'), padId = pk(b.pad || PIN.pad || '', 'the 1ndex launchpad is not open yet');
+  const padAcc = await conn.getAccountInfo(padId); if (!padAcc || !padAcc.owner.equals(PROGRAM)) throw new Error('the 1ndex launchpad is not open yet');
+  const { cfg } = await chain(); const raise = 85;
+  const name = clean(b.name, 32), symbol = String(b.symbol || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 10);
+  if (name.length < 2) throw new Error('give your coin a name'); if (symbol.length < 2) throw new Error('give your coin a ticker (2 to 10 letters)');
+  const hedge = parseHedge(b.hedge), hs = hedge.map(p => p.code + p.w).join('');
+  let img = String(b.image || '1'); if (/^[1-6]$/.test(img)) img = img; else if (/^https:\/\/[^\s"'<>]{6,160}$/.test(img)) img = 'u' + b64u(img); else throw new Error('pick an image, or paste an https image link');
+  const uri = host(req) + '/api/ndx?a=t&n=' + encodeURIComponent(name) + '&s=' + symbol + '&h=' + hs + '&i=' + img;
+  if (uri.length > 200) throw new Error('name or image link too long for on-chain metadata. use a preset image or a shorter link');
+  const buySol = Math.max(0, +b.buySol || 0); if (buySol > 20) throw new Error('first buy is capped at 20 SOL here');
   const mint = Keypair.generate(); const raydium = await sdk(wallet);
   const { transactions, extInfo } = await raydium.launchpad.createLaunchpad({
     programId: PROGRAM, mintA: mint.publicKey, decimals: 6, name, symbol, uri, migrateType: 'cpmm', configId: CONFIG, configInfo: cfg, mintBDecimals: 9, platformId: padId,
@@ -147,7 +159,21 @@ async function buildLaunch(req) {
     extraSigners: [mint], feePayer: wallet, computeBudgetConfig: { units: 600000, microLamports: 60000 },
   });
   const r = await finish(transactions, wallet, [mint], extra => tagIx(wallet, extra ? mint.publicKey : null), !!b.simulate);
-  return { mint: mint.publicKey.toBase58(), pool: extInfo?.address?.poolId?.toBase58() || R.getPdaLaunchpadPoolId(PROGRAM, mint.publicKey, WSOL).publicKey.toBase58(), uri, ...r };
+  return { mint: mint.publicKey.toBase58(), pool: extInfo?.address?.poolId?.toBase58() || R.getPdaLaunchpadPoolId(PROGRAM, mint.publicKey, WSOL).publicKey.toBase58(), uri, hedge: hs, ...r };
+}
+// the token's metadata: the hedge lives in the link, so anyone can read a coin's hedge from the chain
+function tokenMeta(req, q) { const name = clean(q.get('n'), 32), symbol = clean(q.get('s'), 10), hs = String(q.get('h') || ''), i = String(q.get('i') || '1');
+  let hedge = []; try { hedge = parseHedge(hs); } catch { }
+  const image = /^[1-6]$/.test(i) ? host(req) + '/coins/' + i + '.png' : i[0] === 'u' ? unb64u(i.slice(1)) : host(req) + '/coins/1.png';
+  return { name, symbol, image, description: `Launched on 1ndex. 1% of every trade of $${symbol} buys a hedge against the stock market: ${hedgeText(hedge)}.`, external_url: host(req), attributes: hedge.map(p => ({ trait_type: HCODES[p.code].symbol, value: p.w + '%' })), createdOn: host(req) }; }
+// coins launched on the 1ndex launchpad, from Raydium's launch index; each coin's hedge is read from its metadata link
+async function coins() {
+  if (!PIN.pad) return { open: false, coins: [] };
+  const j = await getJ(`${LAUNCH_API}/get/list?sort=new&size=60&mintType=default&platformId=${PIN.pad}`).catch(() => null);
+  const rows = (j && j.data && j.data.rows) || [];
+  return { open: true, pad: PIN.pad, coins: rows.filter(r => !r.platformInfo || r.platformInfo.pubKey === PIN.pad).map(r => { let h = ''; try { h = new URL(r.metadataUrl).searchParams.get('h') || ''; } catch { }
+    let hedge = []; try { hedge = parseHedge(h); } catch { }
+    return { mint: r.mint, pool: r.poolId, name: r.name, symbol: r.symbol, image: r.imgUrl, created: r.createAt, mcapUsd: r.marketCap, progress: r.finishingRate, volumeUsd: r.volumeU, hedge: hedge.map(p => ({ code: p.code, w: p.w })) }; }) };
 }
 async function claim(req) {
   const b = await body(req); const wallet = pk(b.wallet, 'connect a wallet first'), id = padIdOf(wallet);
@@ -169,6 +195,8 @@ module.exports = async (req, res) => { if (req.method === 'GET') res.setHeader('
   try {
     if (a === 'basket') return out(res, 200, await basket(), 's-maxage=45, stale-while-revalidate=120');
     if (a === 'coin') return out(res, 200, { ...(await coinState()), pinned: PIN }, 's-maxage=15, stale-while-revalidate=60');
+    if (a === 'coins') return out(res, 200, await coins(), 's-maxage=20, stale-while-revalidate=60');
+    if (a === 't') return out(res, 200, tokenMeta(req, q), 'public, max-age=31536000, immutable');
     if (a === 'treasury') return out(res, 200, await treasury(), 's-maxage=30, stale-while-revalidate=120');
     if (a === 'activity') return out(res, 200, await activity(), 's-maxage=30, stale-while-revalidate=120');
     if (a === 'holdings') return out(res, 200, await treasury(pk(q.get('wallet'), 'bad wallet').toBase58()));

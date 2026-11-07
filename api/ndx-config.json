@@ -1,125 +1,286 @@
 {
-  "name": "1ndex",
-  "symbol": "1NDEX",
-  "pad": null,
-  "mint": null,
-  "treasury": null,
-  "rule": "four things that tend to hold up or rise when stocks fall, a quarter each, rebalanced every Monday",
-  "benchmark": {
-    "symbol": "SPYx",
-    "name": "the S&P 500 (SPYx)",
-    "mint": "XsoCS1TfEyfFhfvj8EtZ528L3CaKBDBRqRapnBbDF2W"
+ "name": "1ndex",
+ "symbol": "1NDEX",
+ "pad": null,
+ "mint": null,
+ "treasury": null,
+ "rule": "the classic hedge: gold, the short Nasdaq, VIX and dollars, a quarter each",
+ "benchmark": {
+  "symbol": "SPYx",
+  "name": "the S&P 500 (SPYx)",
+  "mint": "XsoCS1TfEyfFhfvj8EtZ528L3CaKBDBRqRapnBbDF2W"
+ },
+ "members": [
+  {
+   "code": "G",
+   "symbol": "GOLD",
+   "name": "Gold",
+   "full": "SPDR Gold Shares, tokenized",
+   "mint": "Xsv9hRk1z5ystj9MhnA7Lq4vjSsLwzL2nxrwmwtD3re",
+   "kind": "gold",
+   "note": "Tracks the SPDR gold ETF. Gold doesn't follow stocks.",
+   "ticker": "GLDx"
   },
-  "members": [
-    {
-      "symbol": "GOLD",
-      "ticker": "GLDx",
-      "name": "Gold xStock",
-      "mint": "Xsv9hRk1z5ystj9MhnA7Lq4vjSsLwzL2nxrwmwtD3re",
-      "decimals": 8,
-      "kind": "gold",
-      "note": "tracks the SPDR Gold Shares ETF. gold doesn't follow stocks."
-    },
-    {
-      "symbol": "SQQQ",
-      "ticker": "SQQQ",
-      "name": "ProShares UltraPro Short QQQ",
-      "mint": "SQQQAa3gUxgnqcEsdjPA4RQNQBgB97TnG2hJhk2WaGE",
-      "decimals": 6,
-      "kind": "short",
-      "note": "aims for 3x the opposite of the Nasdaq-100, each day. rises when tech falls."
-    },
-    {
-      "symbol": "VIX",
-      "ticker": "UVXY",
-      "name": "ProShares Ultra VIX Short-Term Futures",
-      "mint": "UVXY4ojmAMTaPwUmrRmcuxWHjMHCbz3BxX2RBMzjYKx",
-      "decimals": 6,
-      "kind": "vol",
-      "note": "follows the market's fear gauge. it spikes when stocks crash."
-    },
-    {
-      "symbol": "USD",
-      "ticker": "USDC",
-      "name": "USD Coin",
-      "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
-      "decimals": 6,
-      "kind": "cash",
-      "note": "a dollar. it doesn't fall when stocks fall."
-    }
-  ],
-  "stocks": [
-    {
-      "symbol": "SPY",
-      "ticker": "SPYx",
-      "name": "S&P 500",
-      "mint": "XsoCS1TfEyfFhfvj8EtZ528L3CaKBDBRqRapnBbDF2W"
-    },
-    {
-      "symbol": "QQQ",
-      "ticker": "QQQx",
-      "name": "Nasdaq-100",
-      "mint": "Xs8S1uUs1zvS2p7iwtsG3b6fkhpvmwz4GYU3gWAmWHZ"
-    },
-    {
-      "symbol": "NVDA",
-      "ticker": "NVDAx",
-      "name": "Nvidia",
-      "mint": "Xsc9qvGR1efVDFGLrVsmkzv3qi45LTBjeUKSPmx9qEh"
-    },
-    {
-      "symbol": "TSLA",
-      "ticker": "TSLAx",
-      "name": "Tesla",
-      "mint": "XsDoVfqeBukxuZHWhdvWHBhgEHjGNst4MLodqsJHzoB"
-    },
-    {
-      "symbol": "AAPL",
-      "ticker": "AAPLx",
-      "name": "Apple",
-      "mint": "XsbEhLAtcf6HdfpFZ5xEMdqW8nfAvcsP5bdudRLJzJp"
-    },
-    {
-      "symbol": "MSFT",
-      "ticker": "MSFTx",
-      "name": "Microsoft",
-      "mint": "XspzcW1PRtgf6Wj92HCiZdjzKCyFekVD8P5Ueh3dRMX"
-    },
-    {
-      "symbol": "GOOGL",
-      "ticker": "GOOGLx",
-      "name": "Alphabet",
-      "mint": "XsCPL9dNWBMvFtTmwcCA5v3xWPSMEBCszbQdiLLq6aN"
-    },
-    {
-      "symbol": "META",
-      "ticker": "METAx",
-      "name": "Meta",
-      "mint": "Xsa62P5mvPszXL1krVUnU5ar38bBSVcWAB6fmPCo5Zu"
-    },
-    {
-      "symbol": "AMZN",
-      "ticker": "AMZNx",
-      "name": "Amazon",
-      "mint": "Xs3eBt7uRfJX8QUs4suhyU8p2M6DoUDrJyWBa8LLZsg"
-    },
-    {
-      "symbol": "MSTR",
-      "ticker": "MSTRx",
-      "name": "Strategy",
-      "mint": "XsP7xzNPvEHS1m6qfanPUGjNmdnmsLKEoNAnHjdxxyZ"
-    },
-    {
-      "symbol": "COIN",
-      "ticker": "COINx",
-      "name": "Coinbase",
-      "mint": "Xs7ZdzSHLU9ftNJsii5fCeJhoRWSC32SQGzGQtePxNu"
-    },
-    {
-      "symbol": "CRCL",
-      "ticker": "CRCLx",
-      "name": "Circle",
-      "mint": "XsueG8BtpquVJX9LVLLEGuViXUungE6WmK5YZ3p3bd1"
-    }
-  ]
+  {
+   "code": "Q",
+   "symbol": "SQQQ",
+   "name": "Short Nasdaq",
+   "full": "ProShares UltraPro Short QQQ",
+   "mint": "SQQQAa3gUxgnqcEsdjPA4RQNQBgB97TnG2hJhk2WaGE",
+   "kind": "short",
+   "note": "Aims for 3x the opposite of the Nasdaq-100 each day. Rises when tech falls.",
+   "ticker": "SQQQ"
+  },
+  {
+   "code": "V",
+   "symbol": "VIX",
+   "name": "VIX",
+   "full": "ProShares Ultra VIX Short-Term Futures",
+   "mint": "UVXY4ojmAMTaPwUmrRmcuxWHjMHCbz3BxX2RBMzjYKx",
+   "kind": "vol",
+   "note": "Follows the market's fear gauge. It spikes when stocks crash.",
+   "ticker": "UVXY"
+  },
+  {
+   "code": "U",
+   "symbol": "USD",
+   "name": "Dollars",
+   "full": "USD Coin",
+   "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+   "kind": "cash",
+   "note": "A dollar. It doesn't fall when stocks fall.",
+   "ticker": "USDC"
+  }
+ ],
+ "stocks": [
+  {
+   "symbol": "SPY",
+   "ticker": "SPYx",
+   "name": "S&P 500",
+   "mint": "XsoCS1TfEyfFhfvj8EtZ528L3CaKBDBRqRapnBbDF2W"
+  },
+  {
+   "symbol": "QQQ",
+   "ticker": "QQQx",
+   "name": "Nasdaq-100",
+   "mint": "Xs8S1uUs1zvS2p7iwtsG3b6fkhpvmwz4GYU3gWAmWHZ"
+  },
+  {
+   "symbol": "NVDA",
+   "ticker": "NVDAx",
+   "name": "Nvidia",
+   "mint": "Xsc9qvGR1efVDFGLrVsmkzv3qi45LTBjeUKSPmx9qEh"
+  },
+  {
+   "symbol": "TSLA",
+   "ticker": "TSLAx",
+   "name": "Tesla",
+   "mint": "XsDoVfqeBukxuZHWhdvWHBhgEHjGNst4MLodqsJHzoB"
+  },
+  {
+   "symbol": "AAPL",
+   "ticker": "AAPLx",
+   "name": "Apple",
+   "mint": "XsbEhLAtcf6HdfpFZ5xEMdqW8nfAvcsP5bdudRLJzJp"
+  },
+  {
+   "symbol": "MSFT",
+   "ticker": "MSFTx",
+   "name": "Microsoft",
+   "mint": "XspzcW1PRtgf6Wj92HCiZdjzKCyFekVD8P5Ueh3dRMX"
+  },
+  {
+   "symbol": "GOOGL",
+   "ticker": "GOOGLx",
+   "name": "Alphabet",
+   "mint": "XsCPL9dNWBMvFtTmwcCA5v3xWPSMEBCszbQdiLLq6aN"
+  },
+  {
+   "symbol": "META",
+   "ticker": "METAx",
+   "name": "Meta",
+   "mint": "Xsa62P5mvPszXL1krVUnU5ar38bBSVcWAB6fmPCo5Zu"
+  },
+  {
+   "symbol": "AMZN",
+   "ticker": "AMZNx",
+   "name": "Amazon",
+   "mint": "Xs3eBt7uRfJX8QUs4suhyU8p2M6DoUDrJyWBa8LLZsg"
+  },
+  {
+   "symbol": "MSTR",
+   "ticker": "MSTRx",
+   "name": "Strategy",
+   "mint": "XsP7xzNPvEHS1m6qfanPUGjNmdnmsLKEoNAnHjdxxyZ"
+  },
+  {
+   "symbol": "COIN",
+   "ticker": "COINx",
+   "name": "Coinbase",
+   "mint": "Xs7ZdzSHLU9ftNJsii5fCeJhoRWSC32SQGzGQtePxNu"
+  },
+  {
+   "symbol": "CRCL",
+   "ticker": "CRCLx",
+   "name": "Circle",
+   "mint": "XsueG8BtpquVJX9LVLLEGuViXUungE6WmK5YZ3p3bd1"
+  },
+  {
+   "symbol": "HOOD",
+   "ticker": "HOODx",
+   "name": "Robinhood",
+   "mint": "XsvNBAYkrDRNhA7wPHQfX3ZUXZyZLdnCQDfHZ56bzpg"
+  },
+  {
+   "symbol": "PLTR",
+   "ticker": "PLTRx",
+   "name": "Palantir",
+   "mint": "XsoBhf2ufR8fTyNSjqfU71DYGaE6Z3SUGAidpzriAA4"
+  },
+  {
+   "symbol": "AVGO",
+   "ticker": "AVGOx",
+   "name": "Broadcom",
+   "mint": "XsgSaSvNSqLTtFuyWPBhK9196Xb9Bbdyjj4fH3cPJGo"
+  },
+  {
+   "symbol": "NFLX",
+   "ticker": "NFLXx",
+   "name": "Netflix",
+   "mint": "XsEH7wWfJJu2ZT3UCFeVfALnVA6CP5ur7Ee11KmzVpL"
+  },
+  {
+   "symbol": "AMD",
+   "ticker": "AMDx",
+   "name": "AMD",
+   "mint": "XsXcJ6GZ9kVnjqGsjBnktRcuwMBmvKWh8S93RefZ1rF"
+  },
+  {
+   "symbol": "JPM",
+   "ticker": "JPMx",
+   "name": "JPMorgan",
+   "mint": "XsMAqkcKsUewDrzVkait4e5u4y8REgtyS7jWgCpLV2C"
+  },
+  {
+   "symbol": "ORCL",
+   "ticker": "ORCLx",
+   "name": "Oracle",
+   "mint": "XsjFwUPiLofddX5cWFHW35GCbXcSu1BCUGfxoQAQjeL"
+  },
+  {
+   "symbol": "LLY",
+   "ticker": "LLYx",
+   "name": "Eli Lilly",
+   "mint": "Xsnuv4omNoHozR6EEW5mXkw8Nrny5rB3jVfLqi6gKMH"
+  }
+ ],
+ "hedges": [
+  {
+   "code": "G",
+   "symbol": "GLDx",
+   "name": "Gold",
+   "full": "SPDR Gold Shares, tokenized",
+   "mint": "Xsv9hRk1z5ystj9MhnA7Lq4vjSsLwzL2nxrwmwtD3re",
+   "kind": "gold",
+   "note": "Tracks the SPDR gold ETF. Gold doesn't follow stocks."
+  },
+  {
+   "code": "P",
+   "symbol": "PAXG",
+   "name": "Gold (Paxos)",
+   "full": "PAX Gold",
+   "mint": "5GgRAEmv8ZxF2PR5hY72Qs5x1bnQ6UK2RbTPoqJ3wSwW",
+   "kind": "gold",
+   "note": "Each token is one fine troy ounce of London gold, held by Paxos."
+  },
+  {
+   "code": "X",
+   "symbol": "XAUt0",
+   "name": "Gold (Tether)",
+   "full": "Tether Gold",
+   "mint": "AymATz4TCL9sWNEEV9Kvyz45CHVhDZ6kUgjTJPzLpU9P",
+   "kind": "gold",
+   "note": "Each token is one troy ounce of gold in a Swiss vault."
+  },
+  {
+   "code": "S",
+   "symbol": "SLVon",
+   "name": "Silver",
+   "full": "iShares Silver Trust, tokenized",
+   "mint": "iy11ytbSGcUnrjE6Lfv78TFqxKyUESfku1FugS9ondo",
+   "kind": "silver",
+   "note": "Tracks the silver ETF. A metal, not a company."
+  },
+  {
+   "code": "Q",
+   "symbol": "SQQQ",
+   "name": "Short Nasdaq",
+   "full": "ProShares UltraPro Short QQQ",
+   "mint": "SQQQAa3gUxgnqcEsdjPA4RQNQBgB97TnG2hJhk2WaGE",
+   "kind": "short",
+   "note": "Aims for 3x the opposite of the Nasdaq-100 each day. Rises when tech falls."
+  },
+  {
+   "code": "V",
+   "symbol": "UVXY",
+   "name": "VIX",
+   "full": "ProShares Ultra VIX Short-Term Futures",
+   "mint": "UVXY4ojmAMTaPwUmrRmcuxWHjMHCbz3BxX2RBMzjYKx",
+   "kind": "vol",
+   "note": "Follows the market's fear gauge. It spikes when stocks crash."
+  },
+  {
+   "code": "U",
+   "symbol": "USDC",
+   "name": "Dollars",
+   "full": "USD Coin",
+   "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+   "kind": "cash",
+   "note": "A dollar. It doesn't fall when stocks fall."
+  },
+  {
+   "code": "T",
+   "symbol": "USDT",
+   "name": "Dollars (Tether)",
+   "full": "Tether USD",
+   "mint": "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
+   "kind": "cash",
+   "note": "A dollar, from Tether."
+  },
+  {
+   "code": "E",
+   "symbol": "EURC",
+   "name": "Euros",
+   "full": "Euro Coin",
+   "mint": "HzwqbKZw8HxMN6bF2yFZNrht3c2iXXzpKcFu7uBEDKtr",
+   "kind": "cash",
+   "note": "A euro, from Circle. Cash outside the dollar."
+  }
+ ],
+ "presets": [
+  {
+   "id": "classic",
+   "name": "The classic",
+   "h": "G25Q25V25U25",
+   "note": "Gold, the short Nasdaq, VIX and dollars, a quarter each."
+  },
+  {
+   "id": "shield",
+   "name": "Crash shield",
+   "h": "Q50V50",
+   "note": "The two that jump when stocks fall hard."
+  },
+  {
+   "id": "haven",
+   "name": "Safe haven",
+   "h": "P34S33U33",
+   "note": "Gold, silver and dollars. Calm, slow, steady."
+  },
+  {
+   "id": "metal",
+   "name": "Gold bug",
+   "h": "G34P33X33",
+   "note": "Three kinds of gold, a third each."
+  }
+ ]
 }

@@ -338,3 +338,10 @@ body { font-variant-numeric: tabular-nums; }
 .sim button:hover { border-color: var(--s1); } .sim button.on { border-color: var(--s1); color: var(--s1); background: rgba(34, 209, 248, .1); }
 .pn em { display: block; margin-top: 5px; font: 700 14px var(--sans); font-style: normal; color: var(--s1); }
 .pn em:empty { display: none; }
+
+/* v2.2: less text. Section heads are just the headline now */
+.head2 { grid-template-columns: 1fr; margin-bottom: 54px; }
+.why-row { padding: 46px 0; } .why-row .txt h3 { font-size: clamp(36px, 5.4vw, 80px); }
+.cd-stick { grid-template-rows: auto 1fr; padding-bottom: 40px; }
+.soon .cbar { margin-top: 30px; }
+.jar em { font-size: 13px; letter-spacing: .08em; text-transform: uppercase; }

@@ -59,7 +59,7 @@
     for (let i = 0; i < NC; i++) { if (i < NC - NCR) v += .55 + (r() - .5) * 1.5; else v -= 2.6 + r() * 1.6; closes.push(v); }
     const opens = closes.map((c, i) => i ? closes[i - 1] : c - .6), all = [...closes, ...opens], mn = Math.min(...all), mx = Math.max(...all);
     const top = H * (mob ? .16 : .1), bot = ax - 16, Y = p => bot - (p - mn) / (mx - mn || 1) * (bot - top), MY = y => 2 * ax - y;
-    const T_UP = 1250, T_CRASH = 1300, T_MIR = 1700, T_FOLD = 3200, T_SLICE = 3250, T_ONE = 3850, T_NAME = 4150, T_TAG = 4550, T_GO = 5350;
+    const T_UP = 1250, T_CRASH = 1300, T_MIR = 1700, T_FOLD = 3000, T_SLICE = 2950, T_ONE = 4150, T_NAME = 4350, T_TAG = 4700, T_GO = 5400;
     const ct = i => i < NC - NCR ? i / (NC - NCR) * T_UP : T_CRASH + (i - (NC - NCR)) * 50;
     const rain = Array.from({ length: mob ? 40 : 80 }, () => ({ x: r() * W, y: -r() * H * .5, s: 6 + Math.floor(r() * 3) * 3, v: 3 + r() * 4 }));
     const rise = Array.from({ length: mob ? 30 : 60 }, () => ({ x: r() * W, y: H + r() * H * .4, s: 6 + Math.floor(r() * 3) * 3, v: 1.5 + r() * 2.5, c: SEG[Math.floor(r() * 4)] }));
@@ -87,9 +87,6 @@
             g.fillStyle = SH; g.fillRect(x + 4, mya + 4, bw, h); g.fillStyle = SEG[q]; g.fillRect(x, mya, bw, h); g.fillRect(x + bw / 2 - 1, mya - 5, 2, h + 10); } }
         g.globalAlpha = A0; if (t > 200 && t < T_UP) { if (Math.floor(t / 180) !== frame.tk) { frame.tk = Math.floor(t / 180); cue('tick'); } }
         if (red) once('crash', 'thud'); if (t > T_MIR) once('mirror', 'chime');
-        // labels
-        const fs = mob ? 14 : 17; g.font = `600 ${fs}px IN, JB`; g.textAlign = 'left'; g.textBaseline = 'alphabetic'; g.fillStyle = red ? DN : UP; g.fillText(red ? 'S&P 500  ▼' : 'S&P 500', cx0, top - 18);
-        if (t > T_MIR) { g.globalAlpha = A0 * clamp((t - T_MIR) / 400); g.fillStyle = SEG[0]; g.textAlign = 'right'; g.fillText('the other side  ▲', cx1, H - top + 30); g.globalAlpha = A0; }
         // ▼ rain above the line, ▲ rising below it
         if (red) { const kr = clamp((t - T_CRASH) / 1800); g.globalAlpha = A0 * (1 - kr) * .8; for (const d of rain) { d.y += d.v; if (d.y < ax - 10) arrow(g, d.x, d.y, d.s, DN, false); } }
         if (t > T_MIR) { g.globalAlpha = A0 * .7; for (const d of rise) { d.y -= d.v; if (d.y > ax + 10) arrow(g, d.x, d.y, d.s, d.c, true); } }
@@ -99,18 +96,16 @@
       if (t > T_SLICE || handoff) {
         const size = L * sc, p = size / N, pulse = handoff ? 0 : Math.max(0, 1 - Math.abs(t - T_ONE - 250) / 250) * .06, S0 = 1 + pulse;
         const ox = (handoff ? X0 : lx) - size * (S0 - 1) / 2, oy = (handoff ? Y0 : ly) - size * (S0 - 1) / 2, pp = p * S0, cx = ox + size * S0 / 2, cy = oy + size * S0 / 2;
-        for (let k = 0; k < 4; k++) { const kk = handoff ? 1 : out(clamp((t - T_SLICE - k * 90) / 650)); if (kk <= 0) continue;
-          const [sx, sy] = src[k], dx = (sx - cx) * (1 - kk), dy = (sy - cy) * (1 - kk), rot = (1 - kk) * (k % 2 ? 1.3 : -1.3), s2 = .35 + .65 * kk;
-          g.save(); g.translate(cx + dx, cy + dy); g.rotate(rot); g.scale(s2, s2); g.translate(-cx, -cy);
-          g.fillStyle = SH; for (const [x, y, s] of CELLS) if (s === k) g.fillRect(ox + (x + 1) * pp, oy + (y + 1) * pp, pp + .4, pp + .4);
-          g.fillStyle = SEG[k]; for (const [x, y, s] of CELLS) if (s === k) g.fillRect(ox + x * pp, oy + y * pp, pp + .4, pp + .4); g.restore(); }
-        if (!handoff && t > T_SLICE + 500) once('lock', 'pop');
+        if (!frame.px) frame.px = CELLS.filter(c => c[2] >= 0).map(([x, y, k]) => { const i = k === 3 || r() < .5 ? NC - NCR + Math.floor(r() * NCR) : Math.floor(r() * NC), mir = r() < .7, bx = cx0 + i * cw + (cw - bw) / 2 + r() * bw;
+          const ya = Y(Math.max(opens[i], closes[i])), yb = Y(Math.min(opens[i], closes[i])), by = ya + r() * Math.max(3, yb - ya); return { x, y, k, sx: bx, sy: mir ? MY(by) : by, c0: mir ? SEG[Math.min(3, Math.floor(i / NC * 4))] : DN, d: r() * 380 }; });
+        for (const q of frame.px) { const kk = handoff ? 1 : io(clamp((t - T_SLICE - q.d) / 760)), tx = ox + q.x * pp, ty = oy + q.y * pp, x = q.sx + (tx - q.sx) * kk, y = q.sy + (ty - q.sy) * kk + Math.sin(kk * Math.PI) * -40 * (q.k % 2 ? 1 : -1), sz = (pp + .4) * (.55 + .45 * kk);
+          if (kk >= 1) { g.fillStyle = SH; g.fillRect(tx + pp, ty + pp, pp + .4, pp + .4); } g.fillStyle = kk < .6 ? q.c0 : SEG[q.k]; g.fillRect(x, y, sz, sz); }
+        if (!handoff && t > T_SLICE + 380 + 760) once('lock', 'pop');
         const k1 = handoff ? 1 : out(clamp((t - T_ONE) / 420)); if (k1 > 0) { const dy = (1 - k1) * -size * .9; g.globalAlpha = Math.min(1, k1 * 2);
           g.fillStyle = SH; for (const [x, y, s] of CELLS) if (s < 0) g.fillRect(ox + (x + 1) * pp, oy + (y + 1) * pp + dy, pp + .4, pp + .4);
           g.fillStyle = LAV; for (const [x, y, s] of CELLS) if (s < 0) g.fillRect(ox + x * pp, oy + y * pp + dy, pp + .4, pp + .4); g.globalAlpha = 1; if (k1 >= 1) once('one', 'tick'); }
         const fs = F * sc; g.font = `700 ${fs}px ID`; g.textBaseline = 'middle'; g.textAlign = 'left'; let wx = (handoff ? X0 : lx) + (L * 1.06 + gap) * sc; const wy = (handoff ? Y0 : ly) + size * .5 - fs * .04;
         [...'1ndex'].forEach((ch, i) => { const k = handoff ? 1 : out(clamp((t - T_NAME - i * 70) / 460)), cw2 = g.measureText(ch).width; if (k > 0) { const dy = (1 - k) * fs * .3; g.globalAlpha = k; g.fillStyle = SH2; g.fillText(ch, wx + fs * .045, wy + dy + fs * .045); g.fillStyle = LAV; g.fillText(ch, wx, wy + dy); g.globalAlpha = 1; } wx += cw2; });
-        const kt = handoff ? 1 - clamp((now - handoff.t) / 320) : sm(clamp((t - T_TAG) / 600)); if (kt > 0) { g.globalAlpha = kt * .9; g.font = `500 ${Math.max(15, Math.min(F * .15, (W - 32) / 26))}px IN`; g.textAlign = 'center'; g.textBaseline = 'top'; g.fillStyle = MUTE; g.fillText('the coin that hedges against the stock market', W / 2, ly + L + L * .32 + (handoff ? 0 : (1 - kt) * 8)); g.globalAlpha = 1; }
       }
       requestAnimationFrame(frame);
     }
@@ -213,11 +208,11 @@
     const rel = a => a.map(v => (v / a[0] - 1) * 100), spy = rel(ser.SPY), parts = ['GOLD', 'SQQQ', 'VIX'].map(k => ser[k] ? rel(ser[k]) : ts.map(() => 0));
     const ndx = ts.map((_, i) => .25 * (parts[0][i] + parts[1][i] + parts[2][i]));
     S.hist = { t: ts, spy, ndx, ser }; onHist(); }
-  function histFail() { setT('#cdWhen', 'GeckoTerminal is busy'); setT('#cdSay', "GeckoTerminal didn't answer, so the replay can't run right now. Reload in a minute."); setT('#vsSay', "GeckoTerminal didn't answer, so the 15-day chart is offline for now."); setT('#lvl', 'offline'); }
+  function histFail() { setT('#cdWhen', 'GeckoTerminal is busy');  setT('#vsSay', "GeckoTerminal didn't answer, so the 15-day chart is offline for now."); setT('#lvl', 'offline'); }
   function onHist() { const H = S.hist, L = a => a[a.length - 1], s15 = L(H.spy), n15 = L(H.ndx);
     setT('#lvl', (1000 * (1 + n15 / 100)).toFixed(1));
     $('#vsSay').innerHTML = `15 days: stocks <span class="${cls(s15)}">${spct(s15)}</span>, the four <span class="${n15 >= 0 ? 'g' : 'dn'}">${spct(n15)}</span>.`;
-    $('#vs100').innerHTML = `$100 in the four 15 days ago would be about <span class="${cls(n15)}">${usd(100 * (1 + n15 / 100), 2)}</span> now; the same $100 in the S&amp;P 500, <span class="${cls(s15)}">${usd(100 * (1 + s15 / 100), 2)}</span>. Before fees, past moves only.`;
+    void `$100 in the four 15 days ago would be about <span class="${cls(n15)}">${usd(100 * (1 + n15 / 100), 2)}</span> now; the same $100 in the S&amp;P 500, <span class="${cls(s15)}">${usd(100 * (1 + s15 / 100), 2)}</span>. Before fees, past moves only.`;
     renderDetail(false); CH.t0 = 0;
     // the worst 4 hours for the S&P in the window, and what each part did in those same 4 hours
     let wi = 1, wv = 0; for (let i = 1; i < H.t.length; i++) { const r = H.ser.SPY[i] / H.ser.SPY[i - 1] - 1; if (r < wv) { wv = r; wi = i; } }
@@ -244,7 +239,7 @@
     const ks = PH.map(([a, b]) => RM ? (p > a ? 1 : 0) : out(clamp((p - a) / (b - a)))), phase = ks.reduce((n, k, i) => k > 0 ? i : n, -1);
     $$('#cdSteps i').forEach((el, i) => el.classList.toggle('on', i === phase));
     g.clearRect(0, 0, W, H); if (!S.cd) return;
-    const rows = S.cd.rows; if (phase !== CD.phase) { if (phase >= 0) { $('#cdSay').innerHTML = cdSay(phase, rows); cue(phase === 0 ? 'thud' : phase === 5 ? 'chime' : 'tick'); } else $('#cdSay').textContent = 'scroll, and watch what each part did.'; CD.phase = phase; }
+    const rows = S.cd.rows; if (phase !== CD.phase) { if (phase >= 0) cue(phase === 0 ? 'thud' : phase === 5 ? 'chime' : 'tick'); CD.phase = phase; }
     stick.style.setProperty('--tint', (ks[0] * (1 - ks[5])).toFixed(3)); stick.style.setProperty('--gl', ks[5].toFixed(3));
     const shake = ks[0] > 0 && ks[0] < 1 && !RM ? 5 * (1 - ks[0]) : 0; $('#cdMid').style.transform = shake ? `translate(${(Math.random() - .5) * shake}px, ${(Math.random() - .5) * shake}px)` : '';
     // the big number
@@ -382,14 +377,14 @@
 
   // ---------------------------------------------------------------- the coin, the treasury, the pools (read from the chain)
   async function loadCoin() { const box = $('#coinBox'); try { const c = S.coin = await api('coin');
-    if (!c.live) { box.innerHTML = `<div class="soon"><b class="g">not launched yet.</b><p>$1NDEX launches on its own Raydium LaunchLab launchpad. This panel shows its curve, live, from the first trade.</p><div class="cbar"><i style="width:0"></i></div><p class="fine">0 of 85 SOL raised · at 85 SOL it graduates into a Raydium pool</p></div>`; return; }
+    if (!c.live) { box.innerHTML = `<div class="soon"><b class="g">not launched yet.</b><div class="cbar"><i style="width:0"></i></div><p class="fine">0 / 85 SOL raised</p></div>`; return; }
     const pr = Math.min(1, c.progress || 0);
     box.innerHTML = `<div class="clive"><div class="cp"><div><small>market cap</small><b>${(+c.mcapSol).toFixed(1)} SOL</b></div><div><small>raised</small><b>${c.raisedSol.toFixed(2)} / ${c.raiseSol} SOL</b></div><div><small>to the index so far</small><b>${c.platformFeeSol.toFixed(3)} SOL</b></div></div><div class="cbar"><i style="width:${(pr * 100).toFixed(1)}%"></i></div><p class="fine">${c.graduated ? 'graduated to Raydium' : 'on its LaunchLab curve'} · <a href="https://raydium.io/launchpad/token/?mint=${c.mint}" target="_blank" rel="noopener">trade on Raydium ↗</a> · <a href="https://solscan.io/token/${c.mint}" target="_blank" rel="noopener">${short(c.mint)} ↗</a></p></div>`;
   } catch (e) { box.innerHTML = `<div class="empty">couldn't read the chain (${esc(e.message)}). retrying.</div>`; } }
   async function loadTreasury() { try { S.tre = await api('treasury'); } catch (e) { S.tre = { error: e.message }; } renderVaults(); if (S.tre && S.tre.live) loadActivity(); }
   function renderVaults() { const el = $('#vaults'); if (!el || !M().length) return; const t = S.tre, live = t && t.live, tot = live ? t.basketUsd || 0 : 0;
     el.innerHTML = M().map((m, i) => { const h = live ? (t.holdings || []).find(x => x.symbol === m.symbol) : null, share = h && tot ? h.usd / tot * 100 : 0, f = Math.min(100, share / 25 * 100);
-      return `<div class="vault" style="--c:${SEG[i]}"><div class="vt"><b>${esc(m.symbol)}</b><span>${live ? share.toFixed(1) + '% of 25%' : 'target 25%'}</span></div><div class="jar${f > 0 ? ' full' : ''}"><i style="--f:${f.toFixed(1)}%"></i>${f > 0 ? '' : `<em>${t && t.error ? "couldn't read the chain" : 'fills from the first trade'}</em>`}</div><div class="vn"><span>${esc(NAMES[m.symbol])}</span><b>${h ? usd(h.usd, 2) : '$0.00'}</b></div></div>`; }).join('');
+      return `<div class="vault" style="--c:${SEG[i]}"><div class="vt"><b>${esc(m.symbol)}</b><span>${live ? share.toFixed(1) + '% of 25%' : 'target 25%'}</span></div><div class="jar${f > 0 ? ' full' : ''}"><i style="--f:${f.toFixed(1)}%"></i>${f > 0 ? '' : `<em>${t && t.error ? 'offline' : 'empty'}</em>`}</div><div class="vn"><span>${esc(NAMES[m.symbol])}</span><b>${h ? usd(h.usd, 2) : '$0.00'}</b></div></div>`; }).join('');
     setT('#held', live ? usd(tot, 2) : '$0.00'); setT('#unclaimed', live ? (+t.unclaimedSol).toFixed(3) + ' SOL' : '0 SOL');
     $('#treWallet').innerHTML = live && t.wallet ? `treasury <a href="https://solscan.io/account/${t.wallet}" target="_blank" rel="noopener" style="color:var(--s1)">${short(t.wallet)} ↗</a>` : ''; }
   async function loadActivity() { try { const a = await api('activity'); if (!a.items || !a.items.length) return; $('#activity').innerHTML = a.items.map(x => `<a class="row" href="https://solscan.io/tx/${x.sig}" target="_blank" rel="noopener"><span class="nmx">${esc(x.kind)}<i>${new Date(x.time * 1000).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</i></span><span>${short(x.sig)}</span><span><i>solscan</i></span><span class="ar">↗</span></a>`).join(''); } catch (e) { } }
@@ -405,7 +400,7 @@
 
   // ---------------------------------------------------------------- why: the same four hours for SOL, and the one-ticker loop
   function whyBars(rows) { const el = $('#whyBars'); if (!el) return; const mx = Math.max(...rows.map(r => Math.abs(r.v)), .01);
-    el.innerHTML = rows.map(r => `<div style="--c:${r.c === 'grad' ? 'linear-gradient(90deg,#22d1f8,#c200fb)' : r.c};--w:${(Math.abs(r.v) / mx * 100).toFixed(1)}%"><span>${esc(r.n)}</span><i style="background:${r.c === 'grad' ? 'var(--grad)' : r.c}"></i><b class="${r.c === 'grad' ? 'g' : cls(r.v)}">${spct(r.v)}</b></div>`).join('') + `<small>the S&amp;P 500's worst four hours of the last 15 days, ${esc(S.cd.when)}</small>`; }
+    el.innerHTML = rows.map(r => `<div style="--c:${r.c === 'grad' ? 'linear-gradient(90deg,#22d1f8,#c200fb)' : r.c};--w:${(Math.abs(r.v) / mx * 100).toFixed(1)}%"><span>${esc(r.n)}</span><i style="background:${r.c === 'grad' ? 'var(--grad)' : r.c}"></i><b class="${r.c === 'grad' ? 'g' : cls(r.v)}">${spct(r.v)}</b></div>`).join('') + `<small>${esc(S.cd.when.split(',')[0])} · the S&amp;P's worst 4 hours in 15 days</small>`; }
   function wv3Frame(now) { requestAnimationFrame(wv3Frame); if (!vis.wv3 || document.hidden) return; const c = $('#wv3'), [g, W, H] = fit(c);
     const T = RM ? 3 : (now / 1000) % 4.2, k = T < 1.4 ? 1 : T < 2 ? 1 - out((T - 1.4) / .6) : 0, s = Math.min(H * .9, 118, W * .28), p = s / N, x0 = 6, y0 = (H - s) / 2;
     if (!RM && T >= 2 && T < 2.05 && !wv3Frame.c) { wv3Frame.c = 1; } if (T < 1) wv3Frame.c = 0;

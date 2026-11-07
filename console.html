@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>1ndex console</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#0b1022">
+<link rel="icon" type="image/png" href="/favicon.png?v=1">
+<link rel="stylesheet" href="/assets/style.css?v=1">
+<link rel="stylesheet" href="/assets/ndx.css?v=1">
+<style>
+.con { max-width: 980px; margin: 0 auto; padding: 110px 20px 80px; }
+.con h1 { font: 700 clamp(40px, 6vw, 72px)/1 ID; letter-spacing: -.04em; margin: 16px 0 0; }
+.con .lead { color: var(--mute); max-width: 60ch; }
+.step { margin-top: 18px; padding: 22px; border-radius: 16px; background: var(--card); border: 1px solid var(--line); box-shadow: var(--sh-s); }
+.step h2 { font: 700 22px ID; margin: 0; letter-spacing: -.01em; } .step h2 span { font: 700 18px PX; color: var(--s1); margin-right: 8px; }
+.step p { color: var(--mute); margin: 8px 0 14px; font-size: 15px; }
+.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.row label { font: 500 13px JB; color: var(--mute); display: flex; gap: 8px; align-items: center; }
+.row input { width: 120px; height: 40px; border-radius: 10px; border: 1px solid var(--line-2); background: var(--card-2); color: var(--text); padding: 0 12px; font: 600 15px JB; }
+.stat { margin-top: 12px; font: 500 13px/1.6 JB; color: var(--mute); white-space: pre-wrap; word-break: break-word; } .stat.ok { color: var(--up); } .stat.err { color: var(--down); } .stat a { color: var(--s1); }
+.kv { display: grid; grid-template-columns: 180px 1fr; gap: 6px 14px; font: 500 13px JB; margin-top: 10px; } .kv span { color: var(--mute); } .kv b { color: var(--text); word-break: break-all; font-weight: 600; }
+.plan { margin-top: 12px; display: grid; gap: 6px; } .plan div { display: grid; grid-template-columns: 90px 1fr 1fr 1fr; gap: 10px; font: 500 13px JB; color: var(--mute); padding: 8px 10px; border-radius: 10px; background: var(--card-2); } .plan b { color: var(--text); }
+</style>
+</head>
+<body class="dark ndx">
+<nav class="nav" id="nav"><a class="nav-brand" href="/"><b>1ndex</b></a><div class="nav-links"><a href="/">site</a><a href="/docs">docs</a></div><button class="btn btn-ink btn-sm" id="connect">connect</button></nav>
+<main class="con">
+  <span class="kick">console · for the wallet that runs 1ndex</span>
+  <h1>launch and run the index.</h1>
+  <p class="lead">Every step is a transaction you sign in your own wallet. The wallet that creates the launchpad is the treasury: LaunchLab sends the 1% fee to it when it claims, and it buys the four.</p>
+  <div class="step"><h2><span>01</span>create the 1ndex launchpad</h2><p>One transaction makes the 1ndex launchpad on Raydium LaunchLab: 1% of every curve trade to this wallet, no creator fee, and at graduation half the LP burned and half kept as a Raydium fee key.</p>
+    <div class="row"><button class="btn btn-ink" id="padBtn">create the launchpad</button><span class="mono" id="padInfo"></span></div><div class="stat" id="padStat"></div></div>
+  <div class="step"><h2><span>02</span>launch $1NDEX</h2><p>One transaction creates $1NDEX on the 1ndex launchpad: 1,000,000,000 supply, no mint or freeze authority, graduates at 85 SOL into Raydium. An optional first buy goes in the same transaction, so nobody buys before you.</p>
+    <div class="row"><label>first buy <input id="buySol" type="number" min="0" step="0.1" value="0"> SOL</label><button class="btn btn-ink" id="launchBtn">launch $1NDEX</button></div><div class="stat" id="launchStat"></div></div>
+  <div class="step"><h2><span>03</span>claim the fees</h2><p>Moves what the launchpad has collected from LaunchLab's vault to this wallet.</p>
+    <div class="row"><button class="btn btn-line" id="claimBtn">claim</button><span class="mono" id="vaultInfo"></span></div><div class="stat" id="claimStat"></div></div>
+  <div class="step"><h2><span>04</span>buy the four</h2><p>Spends SOL from this wallet on whichever of the four is furthest under a quarter, through Jupiter. It keeps 0.05 SOL for fees.</p>
+    <div class="row"><label>spend <input id="spendSol" type="number" min="0" step="0.05" value="0.5"> SOL</label><button class="btn btn-line" id="planBtn">plan</button><button class="btn btn-ink" id="buyBtn" disabled>buy</button></div>
+    <div class="plan" id="plan"></div><div class="stat" id="buyStat"></div></div>
+</main>
+<div class="toast" id="toast" role="status"></div>
+<script src="/assets/web3.min.js"></script>
+<script src="/assets/console.js?v=1"></script>
+</body>
+</html>
